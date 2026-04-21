@@ -170,7 +170,7 @@ export default function SignIn() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 20, color: "#1a1a2e", letterSpacing: "-0.02em" }}>
-                  UniMarket
+                  MarkITO
                 </span>
                 <span className="badge-uni">Beta</span>
               </div>

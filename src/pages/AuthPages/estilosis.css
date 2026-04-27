@@ -1,0 +1,214 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap');
+
+.uni-root {
+    font-family: 'Syne', sans-serif;
+}
+
+.uni-bg {
+    background: #fdf6ee;
+    background-image:
+        radial-gradient(ellipse 80% 60% at 20% 0%, #ffe8c8 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 100%, #d4eaff 0%, transparent 55%);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.grid-dots {
+    background-image: radial-gradient(circle, #c8b8a2 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.3;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.float-tag {
+    position: absolute;
+    animation: floatBob 4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes floatBob {
+
+    0%,
+    100% {
+        transform: translateY(0px) rotate(var(--rot, 0deg));
+    }
+
+    50% {
+        transform: translateY(-12px) rotate(var(--rot, 0deg));
+    }
+}
+
+.tag-pill {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid rgba(0, 0, 0, 0.07);
+    border-radius: 40px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.login-card {
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 40px;
+    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.10);
+    border: 1.5px solid rgba(0, 0, 0, 0.06);
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 10;
+}
+
+.uni-input {
+    width: 100%;
+    height: 48px;
+    border-radius: 12px;
+    border: 1.5px solid #e8e0d8;
+    background: #fdf9f5;
+    padding: 0 44px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.uni-input:focus {
+    border-color: #ff6b35;
+    background: #fff;
+}
+
+.btn-main {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    width: 100%;
+    height: 50px;
+    border-radius: 14px;
+    color: white;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-main:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(26, 26, 46, 0.35);
+}
+
+.btn-main:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+
+
+
+/* Agrega esto a tu archivo estilosis.css actual */
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.logo-icon {
+    font-size: 32px;
+}
+
+.brand-name {
+    font-weight: 800;
+    font-size: 20px;
+    color: #1a1a2e;
+}
+
+.beta-tag {
+    background: #ff6b35;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+}
+
+.brand-sub {
+    font-size: 12px;
+    color: #9a8f85;
+    margin: 0;
+}
+
+.welcome-text {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+}
+
+.highlight {
+    color: #ff6b35;
+}
+
+.error-box {
+    background: #fff1ee;
+    color: #c0392b;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    font-size: 13px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    font-size: 13px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.icon-left {
+    position: absolute;
+    left: 14px;
+    top: 12px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 13px;
+    top: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.footer-text {
+    font-size: 13px;
+    color: #9a8f85;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.footer-text a {
+    color: #1a1a2e;
+    font-weight: 700;
+    text-decoration: none;
+}

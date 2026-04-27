@@ -47,7 +47,7 @@ export default function AppLayout() {
           ))}
         </nav>
 
-        {/* Logout - CORRECCIÓN 3: Cambiar onClick para usar handleLogout */}
+        {/* Logout */}
         <div style={{ padding: "10px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
           <button
             onClick={handleLogout} // CAMBIADO: antes era () => navigate("/signin")

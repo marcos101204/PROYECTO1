@@ -64,8 +64,6 @@ export default function Home() {
 
 
 
-  // En un caso real, esto vendría de localStorage.getItem("isAuth")
-
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
 

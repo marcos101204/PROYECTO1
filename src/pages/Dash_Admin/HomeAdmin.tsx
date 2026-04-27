@@ -51,16 +51,13 @@ export default function HomeAdmin() {
         setIsModalOpen(true);
     };
 
-    // ✅ CORREGIDO LÍNEA 123: Función saveUser ahora está correctamente definida dentro del componente
     const saveUser = (e: React.FormEvent) => {
         e.preventDefault();
         if (!currentUser) return;
 
         if (currentUser.id_usuario) {
-            // Editar usuario existente
             setUsers(users.map(u => u.id_usuario === currentUser.id_usuario ? (currentUser as Usuario) : u));
         } else {
-            // ✅ CORREGIDO LÍNEA 64: Ahora fecha_registro es un string, no un array
             const nuevoUsuario: Usuario = {
                 ...(currentUser as Usuario),
                 id_usuario: Date.now(),

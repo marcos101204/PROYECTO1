@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-// Asegúrate de que esta ruta sea la correcta en tu estructura de carpetas
 import "./estilosis.css";
 
 interface FloatingItem {
@@ -32,7 +31,7 @@ export default function SignIn() {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Tipado del evento de formulario
+  // Formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !password) {
@@ -86,7 +85,6 @@ export default function SignIn() {
             left: item.left,
             right: item.right,
             animationDelay: item.delay,
-            // Casteo a 'any' para que TS permita variables CSS personalizadas
             ["--rot" as any]: item.rotate,
           } as React.CSSProperties}
         >

@@ -212,3 +212,14 @@
     font-weight: 700;
     text-decoration: none;
 }
+
+.sidebar {
+    background: #ffffff !important;
+}
+
+.activity-feed {
+    background: #ffffff !important;
+    border-radius: 18px;
+    padding: 16px;
+    border: 1.5px solid #f0ebe4;
+}

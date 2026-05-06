@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import "./estilosis.css";
+import { Link } from 'react-router';
 
 interface FloatingItem {
   emoji: string;
@@ -42,19 +43,32 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost/PROYECTO_REPOSITORIO%20-%20Copy/project/conexion/conexion.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo: email, contrasena: password }),
+      const response = await fetch('http://localhost/PROYECTO_REPOSITORIO%20-%20Copy/project/conexion/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          correo: email.trim(),
+          contrasena: password
+        }),
       });
-
+      // Añade esto para debug:
+      if (response.status === 401) {
+        const errorData = await response.json();
+        setError(errorData.message); // Esto dirá "Correo o contraseña incorrectos"
+        setLoading(false);
+        return;
+      }
+      // Validamos si la respuesta es un JSON válido
       const data = await response.json();
 
       if (data.success) {
+        // Guardar en localStorage
         localStorage.setItem("userRole", data.rol);
         localStorage.setItem("userName", data.nombre);
+        localStorage.setItem("userId", data.id.toString());
         localStorage.setItem("isAuth", "true");
 
+        // Redirección lógica según el rol
         const rol = data.rol.toLowerCase().trim();
         if (rol === "admin" || rol === "administrador") {
           navigate("/HomeAdmin");
@@ -62,11 +76,12 @@ export default function SignIn() {
           navigate("/Home2");
         }
       } else {
+        // Mostrar el mensaje que viene del PHP
         setError(data.message || "Credenciales incorrectas.");
       }
     } catch (err) {
-      setError("Error de conexión. Asegúrate de que XAMPP esté activo.");
-      console.error(err);
+      setError("Error de conexión. Revisa que Apache (XAMPP) esté encendido.");
+      console.error("Fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -155,7 +170,7 @@ export default function SignIn() {
         </form>
 
         <p className="footer-text">
-          ¿No tienes cuenta? <a href="/register">Regístrate</a>
+          ¿No tienes cuenta? <Link to="/signup">Regístrate</Link>
         </p>
       </div>
     </div>

@@ -108,6 +108,7 @@ export default function Home() {
 
           <span className="logo-text" style={{ fontWeight: 800, fontSize: "20px", color: "#1a1a2e" }}>markITO</span>
 
+
         </div>
 
 
@@ -262,7 +263,7 @@ export default function Home() {
 
           {isLoggedIn ? (
 
-            <div className="card-surface" style={{ padding: "20px", background: "#fff", borderRadius: "15px", boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }}>
+            <div className="card-surface" style={{ padding: "20px", background: "#fff", borderRadius: "15px", boxShadow: "0 4px 6px rgba(255, 255, 255, 0.05)" }}>
 
               <h3 className="sidebar-title" style={{ marginTop: 0 }}>Tu actividad</h3>
 
@@ -322,8 +323,7 @@ export default function Home() {
 
             {RECENT_ACTIVITY.map((act, i) => (
 
-              <div key={i} style={{ fontSize: "12px", marginBottom: "10px", padding: "10px", background: "#f9f9f9", borderRadius: "8px" }}>
-
+              <div key={i} style={{ fontSize: "12px", marginBottom: "10px", padding: "10px", background: "#f5f5f5", borderRadius: "8px", color: "#1a1a2e" }}>
                 <strong>{act.user}</strong> {act.action} <strong>{act.item}</strong>
 
               </div>

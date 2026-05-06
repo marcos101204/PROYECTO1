@@ -9,6 +9,7 @@ import Home2 from "./pages/Dashboard/Home2.tsx";
 import SignIn from "./pages/AuthPages/SignIn.tsx";
 import HomeAdmin from "./pages/Dash_Admin/HomeAdmin.tsx";
 import AppLayout from "./layout/AppLayout.tsx";
+import SignUp from "./pages/AuthPages/SignUp.tsx";
 import { AppWrapper } from "./components/common/PageMeta.tsx";
 
 
@@ -28,6 +29,7 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/Home2" element={<Home2 />} />
           <Route path="/HomeAdmin" element={<HomeAdmin />} />
           <Route path="/login" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
         </Routes>
       </BrowserRouter>
     </AppWrapper>

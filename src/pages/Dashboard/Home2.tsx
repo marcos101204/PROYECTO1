@@ -66,7 +66,12 @@ export default function Home2() {
 
     const discount = (price: number, original: number) => Math.round((1 - price / original) * 100);
 
-
+    const handleLogout = () => {
+        if (window.confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+            localStorage.removeItem("userToken");
+            window.location.replace("/login");
+        }
+    };
 
     return (
 
@@ -118,7 +123,9 @@ export default function Home2() {
                                 + Publicar artículo
 
                             </button>
-
+                            <button onClick={handleLogout} className="btn-logout">
+                                Cerrar Sesión 🚪
+                            </button>
                         </div>
 
                     </div>

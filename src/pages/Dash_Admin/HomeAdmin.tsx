@@ -2,19 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./estilos.css";
 
 // --- INTERFACES ---
-interface Usuario {
-    id_usuario: number;
-    nombre: string;
-    apellido_paterno: string;
-    apellido_materno: string;
-    correo: string;
-    contrasena?: string;
-    rol: "admin" | "usuario";
-    estado_registro: "aprobado" | "pendiente";
-    activo: number;
-    fecha_registro: string;
-}
-
 interface Producto {
     id_producto: number;
     nombre: string;
@@ -24,52 +11,64 @@ interface Producto {
     nombre_categoria: string;
 }
 
-const INITIAL_USERS: Usuario[] = [
-    { id_usuario: 1, nombre: "Juan", apellido_paterno: "Pérez", apellido_materno: "García", correo: "juan@example.com", rol: "usuario", estado_registro: "aprobado", activo: 1, fecha_registro: "2026-04-22 15:40:33" },
-    { id_usuario: 2, nombre: "Maria", apellido_paterno: "López", apellido_materno: "Martínez", correo: "maria@example.com", rol: "usuario", estado_registro: "aprobado", activo: 1, fecha_registro: "2026-04-22 15:40:33" },
-    { id_usuario: 3, nombre: "Jostin", apellido_paterno: "Admin", apellido_materno: "Sistema", correo: "admin@markito.com", rol: "admin", estado_registro: "aprobado", activo: 1, fecha_registro: "2026-04-22 15:40:33" },
-];
+interface UsuarioDB {
+    id_usuario: number;
+    nombre_completo: string;
+    correo_institucional: string;
+    rol: string;
+    esta_activo: number | string;
+    fecha_creacion: string;
+}
 
 export default function HomeAdmin() {
-    const [users, setUsers] = useState<Usuario[]>(INITIAL_USERS);
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    // Cambiamos Partial por una estructura más definida para evitar errores de undefined en inputs
-    const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
-
     const [productos, setProductos] = useState<Producto[]>([]);
     const [loadingProds, setLoadingProds] = useState<boolean>(true);
 
+    const [usuariosDB, setUsuariosDB] = useState<UsuarioDB[]>([]);
+    const [loadingUsuarios, setLoadingUsuarios] = useState<boolean>(true);
+
+    // --- FETCH PRODUCTOS ---
     useEffect(() => {
         const fetchProductos = async () => {
-            setLoadingProds(true); // Aseguramos que inicia la carga
+            setLoadingProds(true);
             try {
-                console.log("Intentando conectar a la API...");
-
                 const response = await fetch("http://localhost/PROYECTO_REPOSITORIO%20-%20Copy/project/conexion/productos.php");
-
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
-                }
-
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
                 const result = await response.json();
-                console.log("Datos recibidos de PHP:", result);
-
                 if (result.status === "success") {
                     setProductos(result.data);
                 } else {
                     console.error("El PHP reportó un error:", result.message);
                 }
             } catch (error) {
-                console.error("Error crítico en el fetch:", error);
-                // Si llega aquí, es que no hubo conexión o el JSON estaba mal
+                console.error("Error crítico en el fetch de productos:", error);
             } finally {
-                // ESTO ES LO MÁS IMPORTANTE:
-                // Pase lo que pase, quitamos el mensaje de "Cargando..."
                 setLoadingProds(false);
             }
         };
-
         fetchProductos();
+    }, []);
+
+    // --- FETCH USUARIOS DB ---
+    useEffect(() => {
+        const fetchUsuarios = async () => {
+            setLoadingUsuarios(true);
+            try {
+                const response = await fetch("http://localhost/PROYECTO_REPOSITORIO%20-%20Copy/project/conexion/usuarios.php");
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+                const result = await response.json();
+                if (result.status === "success") {
+                    setUsuariosDB(result.data);
+                } else {
+                    console.error("Error del servidor:", result.message);
+                }
+            } catch (error) {
+                console.error("Error al cargar usuarios:", error);
+            } finally {
+                setLoadingUsuarios(false);
+            }
+        };
+        fetchUsuarios();
     }, []);
 
     const handleLogout = () => {
@@ -77,51 +76,6 @@ export default function HomeAdmin() {
             localStorage.removeItem("userToken");
             window.location.replace("/login");
         }
-    };
-
-    const handleDelete = (id: number) => {
-        if (window.confirm("¿Eliminar este usuario?")) {
-            setUsers(prev => prev.filter(u => u.id_usuario !== id));
-        }
-    };
-
-    const openModal = (user: Usuario | null = null) => {
-        if (user) {
-            setCurrentUser({ ...user });
-        } else {
-            setCurrentUser({
-                id_usuario: 0, // 0 indica que es nuevo
-                nombre: "",
-                apellido_paterno: "",
-                apellido_materno: "",
-                correo: "",
-                rol: "usuario",
-                estado_registro: "pendiente",
-                activo: 1,
-                fecha_registro: ""
-            });
-        }
-        setIsModalOpen(true);
-    };
-
-    const saveUser = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!currentUser) return;
-
-        if (currentUser.id_usuario !== 0) {
-            // Editando
-            setUsers(users.map(u => u.id_usuario === currentUser.id_usuario ? currentUser : u));
-        } else {
-            // Nuevo
-            const nuevoUsuario: Usuario = {
-                ...currentUser,
-                id_usuario: Date.now(),
-                fecha_registro: new Date().toISOString().replace('T', ' ').split('.')[0]
-            };
-            setUsers([...users, nuevoUsuario]);
-        }
-        setIsModalOpen(false);
-        setCurrentUser(null);
     };
 
     return (
@@ -137,42 +91,61 @@ export default function HomeAdmin() {
             </header>
 
             <main className="content">
+
+                {/* ── SECCIÓN 1: USUARIOS DESDE BASE DE DATOS ── */}
                 <section className="admin-section">
                     <div className="table-actions">
-                        <h2>Gestión de Usuarios</h2>
-                        <button onClick={() => openModal()} className="btn-add">+ Agregar Usuario</button>
+                        <h2>Usuarios </h2>
                     </div>
-                    <table className="crud-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre Completo</th>
-                                <th>Correo</th>
-                                <th>Rol</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.map((user) => (
-                                <tr key={user.id_usuario}>
-                                    <td>{user.id_usuario}</td>
-                                    <td>{`${user.nombre} ${user.apellido_paterno}`}</td>
-                                    <td>{user.correo}</td>
-                                    <td><span className={`badge ${user.rol}`}>{user.rol}</span></td>
-                                    <td><span className={`status ${user.estado_registro}`}>{user.estado_registro}</span></td>
-                                    <td className="actions-cell">
-                                        <button onClick={() => openModal(user)}>✏️</button>
-                                        <button onClick={() => handleDelete(user.id_usuario)}>🗑️</button>
-                                    </td>
+                    {loadingUsuarios ? (
+                        <p className="loading-text">Cargando usuarios...</p>
+                    ) : (
+                        <table className="crud-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Correo Institucional</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Creación</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {usuariosDB.length > 0 ? (
+                                    usuariosDB.map((u) => (
+                                        <tr key={u.id_usuario}>
+                                            <td>{u.id_usuario}</td>
+                                            <td style={{ fontWeight: "bold" }}>{u.nombre_completo}</td>
+                                            <td>{u.correo_institucional}</td>
+                                            <td>
+                                                <span className={`badge ${u.rol?.toLowerCase()}`}>
+                                                    {u.rol}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span className={`status ${u.esta_activo == 1 || u.esta_activo === "activo" ? "aprobado" : "pendiente"}`}>
+                                                    {u.esta_activo == 1 || u.esta_activo === "activo" ? "activo" : "inactivo"}
+                                                </span>
+                                            </td>
+                                            <td>{new Date(u.fecha_creacion).toLocaleDateString()}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={6} style={{ textAlign: "center" }}>
+                                            No se encontraron usuarios en la base de datos.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
                 </section>
 
                 <hr className="divider" />
 
+                {/* ── SECCIÓN 2: PRODUCTOS DESDE BASE DE DATOS ── */}
                 <section className="admin-section">
                     <h2>Lista de Productos</h2>
                     {loadingProds ? (
@@ -212,49 +185,8 @@ export default function HomeAdmin() {
                         </table>
                     )}
                 </section>
-            </main>
 
-            {isModalOpen && currentUser && (
-                <div className="modal-overlay">
-                    <div className="modal-card">
-                        <h2>{currentUser.id_usuario !== 0 ? "Editar Usuario" : "Nuevo Usuario"}</h2>
-                        <form onSubmit={saveUser}>
-                            <div className="form-group">
-                                <input
-                                    placeholder="Nombre"
-                                    value={currentUser.nombre}
-                                    onChange={e => setCurrentUser({ ...currentUser, nombre: e.target.value })}
-                                    required
-                                />
-                                <input
-                                    placeholder="Apellido Paterno"
-                                    value={currentUser.apellido_paterno}
-                                    onChange={e => setCurrentUser({ ...currentUser, apellido_paterno: e.target.value })}
-                                    required
-                                />
-                                <input
-                                    placeholder="Correo Electrónico"
-                                    type="email"
-                                    value={currentUser.correo}
-                                    onChange={e => setCurrentUser({ ...currentUser, correo: e.target.value })}
-                                    required
-                                />
-                                <select
-                                    value={currentUser.rol}
-                                    onChange={e => setCurrentUser({ ...currentUser, rol: e.target.value as "admin" | "usuario" })}
-                                >
-                                    <option value="usuario">Usuario</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </div>
-                            <div className="modal-buttons">
-                                <button type="submit" className="btn-save">Guardar Cambios</button>
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="btn-cancel">Cancelar</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            </main>
         </div>
     );
 }

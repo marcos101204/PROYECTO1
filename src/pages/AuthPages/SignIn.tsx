@@ -43,7 +43,7 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost/PROYECTO_REPOSITORIO%20-%20Copy/project/conexion/login.php', {
+      const response = await fetch('http://localhost/PROYECTO1/project/conexion/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

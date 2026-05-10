@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 // conexion.php
 $host = "localhost";
-$db   = "markito1";
+$db   = "markito";
 $user = "root";
 $pass = "";
 

@@ -1,42 +1,71 @@
 <?php
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit(0); }
+
+$host = "localhost";
+$dbname = "markito"; 
+$username = "root";
+$password = "";
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $method = $_SERVER['REQUEST_METHOD'];
+
+    switch($method) {
+        case 'GET':
+            // Selecciona todo ordenado por el ID más reciente
+            $stmt = $pdo->query("SELECT * FROM producto ORDER BY id_producto DESC");
+            echo json_encode(["status" => "success", "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+            break;
+
+        case 'POST':
+            $data = json_decode(file_get_contents("php://input"), true);
+            // Ajustado a los nombres de columnas de tu imagen
+            $sql = "INSERT INTO producto (titulo, descripcion, precio, condicion, estado_vendedor, estado_moderacion, id_vendedor, id_categoria) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                $data['titulo'], 
+                $data['descripcion'], 
+                $data['precio'], 
+                $data['condicion'], 
+                $data['estado_vendedor'] ?? 'Disponible',
+                $data['estado_moderacion'] ?? 'Aprobado',
+                $data['id_vendedor'] ?? 1,
+                $data['id_categoria']
+            ]);
+            echo json_encode(["status" => "success", "message" => "Producto creado"]);
+            break;
+
+        case 'PUT':
+            $data = json_decode(file_get_contents("php://input"), true);
+            // Ajustado para actualizar los campos visibles en tu captura
+            $sql = "UPDATE producto SET titulo=?, descripcion=?, precio=?, condicion=?, id_categoria=? WHERE id_producto=?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                $data['titulo'], 
+                $data['descripcion'], 
+                $data['precio'], 
+                $data['condicion'], 
+                $data['id_categoria'],
+                $data['id_producto']
+            ]);
+            echo json_encode(["status" => "success", "message" => "Producto actualizado"]);
+            break;
+
+        case 'DELETE':
+            if (isset($_GET['id'])) {
+                $stmt = $pdo->prepare("DELETE FROM producto WHERE id_producto = ?");
+                $stmt->execute([$_GET['id']]);
+                echo json_encode(["status" => "success", "message" => "Producto eliminado"]);
+            }
+            break;
+    }
+} catch (PDOException $e) {
+    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }
-
-// 1. Conexión (Asegúrate de que la base de datos sea 'markito')
-$conn = mysqli_connect("localhost", "root", "", "markito");
-
-if (!$conn) {
-    echo json_encode(["status" => "error", "message" => "Error de conexión: " . mysqli_connect_error()]);
-    exit;
-}
-
-// 2. Consulta SQL 
-// He simplificado la consulta para evitar errores de JOIN por ahora. 
-// Si esto funciona, luego añadimos la categoría.
-$query = "SELECT id_producto, nombre, precio, detalles, fecha_creacion FROM producto";
-
-$result = mysqli_query($conn, $query);
-
-// 3. Verificación de la consulta
-if (!$result) {
-    // Si la consulta falla, esto nos dirá POR QUÉ (ej: la tabla no existe)
-    echo json_encode(["status" => "error", "message" => "Error en SQL: " . mysqli_error($conn)]);
-    exit;
-}
-
-$productos = [];
-while($row = mysqli_fetch_assoc($result)) {
-    $productos[] = $row;
-}
-
-// 4. Respuesta exitosa
-echo json_encode(["status" => "success", "data" => $productos]);
-
-mysqli_close($conn);
+?>

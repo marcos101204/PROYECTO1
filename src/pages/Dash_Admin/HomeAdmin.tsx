@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./estilos.css";
+import ReportesAdmin from "./ReportesAdmin";
+import CategoriasAdmin from "./CategoriasAdmin";
 
 // --- INTERFACES ---
 interface Producto {
@@ -36,7 +38,7 @@ interface Reporte {
 
 export default function HomeAdmin() {
     // Estado de la vista: ahora incluye 'inicio' y 'reportes'
-    const [view, setView] = useState<"inicio" | "usuarios" | "productos" | "reportes">("inicio");
+    const [view, setView] = useState<"inicio" | "usuarios" | "productos" | "reportes" | "categorias">("inicio");
     const [productos, setProductos] = useState<Producto[]>([]);
     const [usuariosDB, setUsuariosDB] = useState<UsuarioDB[]>([]);
     const [reportes, setReportes] = useState<Reporte[]>([]);
@@ -51,13 +53,14 @@ export default function HomeAdmin() {
         if (view === "usuarios") fetchUsuarios();
         else if (view === "productos") fetchProductos();
         else if (view === "reportes") fetchReportes();
+        else if (view === "categorias") { /* CategoriasAdmin se encarga de fetch propio */ }
     }, [view]);
 
     // --- FETCHES ---
     const fetchProductos = async () => {
         setLoading(true);
         try {
-            const res = await fetch("http://localhost/PROYECTO1/project/conexion/productos.php");
+            const res = await fetch("http://localhost/PROYECTO1/conexion/productos.php");
             const result = await res.json();
             if (result.status === "success") setProductos(result.data);
         } catch (error) { console.error(error); }
@@ -67,7 +70,7 @@ export default function HomeAdmin() {
     const fetchUsuarios = async () => {
         setLoading(true);
         try {
-            const res = await fetch("http://localhost/PROYECTO1/project/conexion/usuarios.php");
+            const res = await fetch("http://localhost/PROYECTO1/conexion/usuarios.php");
             const result = await res.json();
             if (result.status === "success") setUsuariosDB(result.data);
         } catch (error) { console.error(error); }
@@ -77,7 +80,7 @@ export default function HomeAdmin() {
     const fetchReportes = async () => {
         setLoading(true);
         try {
-            const res = await fetch("http://localhost/PROYECTO1/project/conexion/reportes.php");
+            const res = await fetch("http://localhost/PROYECTO1/conexion/reportes.php");
             const result = await res.json();
             if (result.status === "success") setReportes(result.data);
         } catch (error) { console.error(error); }
@@ -103,7 +106,7 @@ export default function HomeAdmin() {
         e.preventDefault();
         const tipo = view;
         const method = editMode ? "PUT" : "POST";
-        const url = `http://localhost/PROYECTO1/project/conexion/${tipo}.php`;
+        const url = `http://localhost/PROYECTO1/conexion/${tipo}.php`;
 
         try {
             const res = await fetch(url, {
@@ -127,7 +130,7 @@ export default function HomeAdmin() {
     const handleDelete = async (tipo: 'usuarios' | 'productos', id: number) => {
         if (!window.confirm("¿Estás seguro de eliminar este registro?")) return;
         try {
-            const res = await fetch(`http://localhost/PROYECTO1/project/conexion/${tipo}.php?id=${id}`, {
+            const res = await fetch(`http://localhost/PROYECTO1/conexion/${tipo}.php?id=${id}`, {
                 method: 'DELETE'
             });
             const result = await res.json();
@@ -191,7 +194,9 @@ export default function HomeAdmin() {
             case "productos":
                 return <TablaProductos data={productos} onDelete={(id) => handleDelete('productos', id)} onEdit={(p) => openModal(p)} />;
             case "reportes":
-                return <TablaReportes data={reportes} />;
+                return <ReportesAdmin />;
+            case "categorias":
+                return <CategoriasAdmin />;
             default:
                 return null;
         }
@@ -205,6 +210,7 @@ export default function HomeAdmin() {
                     <button className={view === "inicio" ? "active" : ""} onClick={() => setView("inicio")}>🏠 Inicio</button>
                     <button className={view === "usuarios" ? "active" : ""} onClick={() => setView("usuarios")}>👥 Usuarios</button>
                     <button className={view === "productos" ? "active" : ""} onClick={() => setView("productos")}>📦 Productos</button>
+                    <button className={view === "categorias" ? "active" : ""} onClick={() => setView("categorias")}>🗂️ Categorías</button>
                     <button className={view === "reportes" ? "active" : ""} onClick={() => setView("reportes")}>🚩 Reportes</button>
                 </nav>
                 <button onClick={handleLogout} className="btn-logout-sidebar">Cerrar Sesión 🚪</button>

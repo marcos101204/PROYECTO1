@@ -65,6 +65,17 @@ export default function Home() {
     fetchProductos();
   }, [navigate]);
 
+  const logout = () => {
+    try {
+      localStorage.removeItem('user_markito');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('isAuth');
+    } catch (e) { console.warn('Error clearing storage', e); }
+    navigate('/signin');
+  };
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const toggleSave = (id: number) => {
     setSavedItems((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
   };
@@ -159,10 +170,16 @@ export default function Home() {
 
       <div className="home-root">
         {/* Top Header - Nombre del usuario dinámico */}
-        <div style={{display: 'flex', justifyContent: 'flex-end', marginBottom: '16px'}}>
+        <div style={{display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', alignItems: 'center', gap: 12}}>
           <span style={{fontFamily: "'Syne', sans-serif", fontWeight: 'bold', color: '#1a1a2e'}}>
             Hola, {usuario?.nombre} 👋
           </span>
+          <button onClick={() => navigate('/mi-perfil')} style={{ background: '#ff6b35', color: 'white', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>
+            Mi Perfil
+          </button>
+          <button onClick={() => setShowLogoutConfirm(true)} style={{ background: 'transparent', color: '#d23a2a', border: '1.5px solid #f5d8d6', borderRadius: 10, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>
+            Cerrar sesión
+          </button>
         </div>
 
         {/* Hero Banner original */}
@@ -321,6 +338,18 @@ export default function Home() {
 
           </div>
         </div>
+        {showLogoutConfirm && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }}>
+            <div style={{ width: 360, background: '#fff', borderRadius: 12, padding: 18, boxShadow: '0 20px 50px rgba(0,0,0,0.3)', textAlign: 'center' }}>
+              <h3 style={{ margin: 0, fontFamily: "'Syne', sans-serif", fontSize: 18 }}>¿Cerrar sesión?</h3>
+              <p style={{ color: '#6b6b6b', marginTop: 8 }}>Confirma que deseas cerrar tu sesión actual.</p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14 }}>
+                <button onClick={() => setShowLogoutConfirm(false)} style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #e8e0d8', background: 'transparent', cursor: 'pointer' }}>Cancelar</button>
+                <button onClick={() => { setShowLogoutConfirm(false); logout(); }} style={{ padding: '8px 12px', borderRadius: 10, border: 'none', background: '#d23a2a', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Cerrar sesión</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

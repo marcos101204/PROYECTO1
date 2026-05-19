@@ -17,9 +17,19 @@ try {
 
     switch($method) {
         case 'GET':
-            // Selecciona todo ordenado por el ID más reciente
-            $stmt = $pdo->query("SELECT * FROM producto ORDER BY id_producto DESC");
-            echo json_encode(["status" => "success", "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+            // Soporta varios modos: ?id= (producto), ?id_vendedor= (mis publicaciones), o lista general
+            if (isset($_GET['id'])) {
+                $stmt = $pdo->prepare("SELECT * FROM producto WHERE id_producto = ?");
+                $stmt->execute([$_GET['id']]);
+                echo json_encode(["status" => "success", "data" => $stmt->fetch(PDO::FETCH_ASSOC)]);
+            } elseif (isset($_GET['id_vendedor'])) {
+                $stmt = $pdo->prepare("SELECT * FROM producto WHERE id_vendedor = ? ORDER BY id_producto DESC");
+                $stmt->execute([$_GET['id_vendedor']]);
+                echo json_encode(["status" => "success", "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+            } else {
+                $stmt = $pdo->query("SELECT * FROM producto ORDER BY id_producto DESC");
+                echo json_encode(["status" => "success", "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+            }
             break;
 
         case 'POST':

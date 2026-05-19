@@ -8,6 +8,8 @@ import Home from "./pages/Dashboard/Home.tsx";
 import Home2 from "./pages/Dashboard/Home2.tsx";
 import SignIn from "./pages/AuthPages/SignIn.tsx";
 import HomeAdmin from "./pages/Dash_Admin/HomeAdmin.tsx";
+import MiPerfil from "./pages/User/MiPerfil.tsx";
+import MisPublicaciones from "./pages/User/MisPublicaciones.tsx";
 import AppLayout from "./layout/AppLayout.tsx";
 import SignUp from "./pages/AuthPages/SignUp.tsx";
 import { AppWrapper } from "./components/common/PageMeta.tsx";
@@ -28,6 +30,8 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/signin" element={<SignIn />} />
           <Route path="/Home2" element={<Home2 />} />
           <Route path="/HomeAdmin" element={<HomeAdmin />} />
+          <Route path="/mi-perfil" element={<MiPerfil />} />
+          <Route path="/mis-publicaciones" element={<MisPublicaciones />} />
           <Route path="/login" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/publicar" element={<Publicar />} />

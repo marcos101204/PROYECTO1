@@ -81,7 +81,31 @@ export default function AppLayout() {
               <div className="notif-dot" />
             </div>
             <button className="icon-btn">🛒</button>
-            <div className="avatar-btn">A</div>
+            <button
+              className="avatar-btn"
+              title="Mi Perfil"
+              onClick={() => {
+                // Intentar leer usuario desde localStorage; si no existe, enviar a signin
+                const s = localStorage.getItem('user_markito') || localStorage.getItem('user');
+                if (!s) {
+                  navigate('/signin');
+                  return;
+                }
+                navigate('/mi-perfil');
+              }}
+            >
+              {(() => {
+                try {
+                  const s = localStorage.getItem('user_markito') || localStorage.getItem('user');
+                  if (!s) return 'A';
+                  const obj = JSON.parse(s);
+                  const name = obj.nombre || obj.nombre_completo || obj.name || obj.username || '';
+                  return name ? name.charAt(0).toUpperCase() : 'A';
+                } catch {
+                  return 'A';
+                }
+              })()}
+            </button>
           </div>
         </header>
 

@@ -18,8 +18,16 @@ try {
 
     switch($method) {
         case 'GET':
-            $stmt = $pdo->query("SELECT id_usuario, nombre_completo, correo_institucional, rol, esta_activo, fecha_creacion FROM usuario ORDER BY id_usuario ASC");
-            echo json_encode(["status" => "success", "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+            // Si se proporciona ?id= devuelve un solo usuario
+            if (isset($_GET['id'])) {
+                $stmt = $pdo->prepare("SELECT id_usuario, nombre_completo, correo_institucional, rol, esta_activo, fecha_creacion FROM usuario WHERE id_usuario = ?");
+                $stmt->execute([$_GET['id']]);
+                $data = $stmt->fetch(PDO::FETCH_ASSOC);
+                echo json_encode(["status" => "success", "data" => $data]);
+            } else {
+                $stmt = $pdo->query("SELECT id_usuario, nombre_completo, correo_institucional, rol, esta_activo, fecha_creacion FROM usuario ORDER BY id_usuario ASC");
+                echo json_encode(["status" => "success", "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+            }
             break;
 
         case 'POST':

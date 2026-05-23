@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./estilos.css";
 import ReportesAdmin from "./ReportesAdmin";
 import CategoriasAdmin from "./CategoriasAdmin";
+import UsuariosAdmin from "./UsuariosAdmin";
 
 // --- INTERFACES ---
 interface Producto {
@@ -38,7 +39,7 @@ interface Reporte {
 
 export default function HomeAdmin() {
     // Estado de la vista: ahora incluye 'inicio' y 'reportes'
-    const [view, setView] = useState<"inicio" | "usuarios" | "productos" | "reportes" | "categorias">("inicio");
+    const [view, setView] = useState<"inicio" | "usuarios" | "productos" | "reportes" | "categorias" | "validacion">("inicio");
     const [productos, setProductos] = useState<Producto[]>([]);
     const [usuariosDB, setUsuariosDB] = useState<UsuarioDB[]>([]);
     const [reportes, setReportes] = useState<Reporte[]>([]);
@@ -197,6 +198,8 @@ export default function HomeAdmin() {
                 return <ReportesAdmin />;
             case "categorias":
                 return <CategoriasAdmin />;
+            case "validacion":
+                return <UsuariosAdmin />
             default:
                 return null;
         }
@@ -212,6 +215,8 @@ export default function HomeAdmin() {
                     <button className={view === "productos" ? "active" : ""} onClick={() => setView("productos")}>📦 Productos</button>
                     <button className={view === "categorias" ? "active" : ""} onClick={() => setView("categorias")}>🗂️ Categorías</button>
                     <button className={view === "reportes" ? "active" : ""} onClick={() => setView("reportes")}>🚩 Reportes</button>
+                    {/* NUEVO BOTÓN PARA VALIDACIÓN */}
+                    <button className={view === "validacion" ? "active" : ""} onClick={() => setView("validacion")}>🛡️ Validación</button>
                 </nav>
                 <button onClick={handleLogout} className="btn-logout-sidebar">Cerrar Sesión 🚪</button>
             </aside>
@@ -223,6 +228,8 @@ export default function HomeAdmin() {
                         {view === "usuarios" && "Gestión de Usuarios"}
                         {view === "productos" && "Gestión de Productos"}
                         {view === "reportes" && "Centro de Reportes"}
+                        {/* NUEVO TÍTULO PARA LA VISTA */}
+                        {view === "validacion" && "Validación de Usuarios Admin"}
                     </h1>
                     {(view === "usuarios" || view === "productos") && (
                         <button className="btn-add" onClick={() => openModal()}>+ Añadir Nuevo</button>

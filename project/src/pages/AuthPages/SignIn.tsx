@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router-dom";
 import "./estilosis.css";
-import { Link } from 'react-router';
+
 
 interface FloatingItem {
   emoji: string;
@@ -32,7 +32,6 @@ export default function SignIn() {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !password) {
@@ -43,6 +42,7 @@ export default function SignIn() {
     setLoading(true);
 
     try {
+      // 🛠️ URL corregida apuntando directamente a la ubicación de tu backend
       const response = await fetch('http://localhost/PROYECTO1/project/conexion/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -51,36 +51,42 @@ export default function SignIn() {
           contrasena: password
         }),
       });
-      // Añade esto para debug:
+
       if (response.status === 401) {
         const errorData = await response.json();
-        setError(errorData.message); // Esto dirá "Correo o contraseña incorrectos"
+        setError(errorData.message || "Correo o contraseña incorrectos");
         setLoading(false);
         return;
       }
-      // Validamos si la respuesta es un JSON válido
+
       const data = await response.json();
 
-      if (data.success) {
-        // Guardar en localStorage
-        localStorage.setItem("userRole", data.rol);
-        localStorage.setItem("userName", data.nombre);
-        localStorage.setItem("userId", data.id.toString());
+      // 👁️ Abre la consola (F12) para ver qué te devuelve exactamente el servidor PHP
+      console.log("Respuesta del servidor PHP:", data);
+
+      if (data.success || data.status === "success") {
+        // Tolerancia a fallos por diferencias de nombrado entre PHP y JS
+        const userId = data.id ?? data.id_usuario ?? "";
+        const userRole = data.rol ?? data.rol_usuario ?? "";
+        const userName = data.nombre ?? data.nombre_completo ?? "";
+
+        localStorage.setItem("userRole", userRole);
+        localStorage.setItem("userName", userName);
+        localStorage.setItem("userId", userId.toString());
         localStorage.setItem("isAuth", "true");
 
-        // Redirección lógica según el rol
-        const rol = data.rol.toLowerCase().trim();
+        const rol = userRole.toLowerCase().trim();
         if (rol === "admin" || rol === "administrador") {
           navigate("/HomeAdmin");
         } else {
           navigate("/Home2");
         }
       } else {
-        // Mostrar el mensaje que viene del PHP
+
         setError(data.message || "Credenciales incorrectas.");
       }
     } catch (err) {
-      setError("Error de conexión. Revisa que Apache (XAMPP) esté encendido.");
+      setError("Error de conexión. Revisa que Apache (XAMPP) esté encendido y la URL sea correcta.");
       console.error("Fetch error:", err);
     } finally {
       setLoading(false);
@@ -100,8 +106,8 @@ export default function SignIn() {
             left: item.left,
             right: item.right,
             animationDelay: item.delay,
-            ["--rot" as any]: item.rotate,
-          } as React.CSSProperties}
+            transform: `rotate(${item.rotate})`
+          }}
         >
           <div className="tag-pill">
             <span>{item.emoji}</span> {item.label}
@@ -136,7 +142,7 @@ export default function SignIn() {
                 className="uni-input"
                 placeholder="usuario@universidad.edu"
                 value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -151,7 +157,7 @@ export default function SignIn() {
                 className="uni-input"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
               <button

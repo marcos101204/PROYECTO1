@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import "./estilos.css";
 
 interface Categoria {
   id_categoria: number;
@@ -53,32 +54,98 @@ export default function CategoriasAdmin() {
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Gestión de Categorías</h2>
-      <form onSubmit={save} style={{ marginBottom: 20 }}>
-        <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre" style={{ marginRight: 8 }} />
-        <input value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="Descripción" style={{ marginRight: 8 }} />
-        <button type="submit">{editing ? 'Actualizar' : 'Crear'}</button>
-        {editing && <button type="button" onClick={() => { setEditing(null); setNombre(''); setDescripcion(''); }} style={{ marginLeft: 8 }}>Cancelar</button>}
-      </form>
+    <div className="category-view-container">
+      {/* Título Principal de la Sección */}
+      <div className="section-title-container">
+        <h1 className="main-section-title">Gestión de Categorías</h1>
+      </div>
 
-      {loading ? <p>Cargando...</p> : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr></thead>
-          <tbody>
-            {cats.map(c => (
-              <tr key={c.id_categoria} style={{ borderTop: '1px solid #eee' }}>
-                <td>{c.id_categoria}</td>
-                <td>{c.nombre}</td>
-                <td>{c.descripcion}</td>
-                <td>
-                  <button onClick={() => editar(c)} style={{ marginRight: 8 }}>Editar</button>
-                  <button onClick={() => eliminar(c.id_categoria)} style={{ color: 'red' }}>Eliminar</button>
-                </td>
+      {/* Caja del Formulario */}
+      <div className="category-header-box">
+        <h2>{editing ? '📝 Editar Categoría' : '✨ Nueva Categoría'}</h2>
+
+        <form onSubmit={save} className="category-form">
+          <div className="form-inputs-group">
+            <input
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              placeholder="Nombre de la categoría (ej. Electrónica)"
+              required
+            />
+            <input
+              value={descripcion}
+              onChange={e => setDescripcion(e.target.value)}
+              placeholder="Añade una breve descripción..."
+            />
+          </div>
+          <div className="form-actions-group">
+            <button type="submit" className="btn-add">
+              {editing ? 'Actualizar' : 'Crear'}
+            </button>
+            {editing && (
+              <button
+                type="button"
+                onClick={() => { setEditing(null); setNombre(''); setDescripcion(''); }}
+                className="btn-cancel"
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+
+      {/* Listado / Tabla */}
+      {loading ? (
+        <div className="loader">Cargando categorías...</div>
+      ) : (
+        <div className="table-container">
+          <table className="crud-table">
+            <thead>
+              <tr>
+                <th style={{ width: '100px' }}>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th style={{ width: '120px', textAlign: 'center' }}>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {cats.map(c => (
+                <tr key={c.id_categoria}>
+                  <td>
+                    <span className="category-id-pill">#{c.id_categoria}</span>
+                  </td>
+                  <td>
+                    <span className="category-name">{c.nombre}</span>
+                  </td>
+                  <td>
+                    <div className="category-description">
+                      {c.descripcion || <span style={{ color: '#bbb', fontStyle: 'italic' }}>Sin descripción</span>}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="actions-cell" style={{ justifyContent: 'center' }}>
+                      <button
+                        className="btn-action-row edit"
+                        onClick={() => editar(c)}
+                        title="Editar categoría"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="btn-action-row delete"
+                        onClick={() => eliminar(c.id_categoria)}
+                        title="Eliminar categoría"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

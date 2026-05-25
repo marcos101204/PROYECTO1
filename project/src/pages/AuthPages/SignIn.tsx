@@ -32,7 +32,6 @@ export default function SignIn() {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !password) {
@@ -52,23 +51,19 @@ export default function SignIn() {
         }),
       });
 
-      if (response.status === 401) {
-        const errorData = await response.json();
-        setError(errorData.message); // Esto dirá "Correo o contraseña incorrectos"
-        setLoading(false);
+      const data = await response.json();
+
+      if (!response.ok || response.status === 401) {
+        setError(data.message || "Correo o contraseña incorrectos.");
         return;
       }
 
-      const data = await response.json();
-
       if (data.success) {
-        // Guardar en localStorage
         localStorage.setItem("userRole", data.rol);
         localStorage.setItem("userName", data.nombre);
         localStorage.setItem("userId", data.id.toString());
         localStorage.setItem("isAuth", "true");
 
-        // Redirección lógica según el rol
         const rol = data.rol.toLowerCase().trim();
         if (rol === "admin" || rol === "administrador") {
           navigate("/HomeAdmin");
@@ -123,7 +118,7 @@ export default function SignIn() {
           Bienvenido de <span className="highlight">regreso</span> 👋
         </h1>
 
-        {error && <div className="error-box">⚠️ Tu cuenta se encuentra pendiente de validacion o desactivada</div>}
+        {error && <div className="error-box">⚠️ {error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">

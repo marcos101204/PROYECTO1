@@ -1,7 +1,17 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 
-const FLOATING_ITEMS = [
+interface FloatingItem {
+    emoji: string;
+    label: string;
+    top: string;
+    left?: string;
+    right?: string;
+    delay: string;
+    rotate: string;
+}
+
+const FLOATING_ITEMS: FloatingItem[] = [
     { emoji: "📚", label: "Libros", top: "12%", left: "8%", delay: "0s", rotate: "-8deg" },
     { emoji: "💻", label: "Laptop", top: "20%", right: "7%", delay: "0.4s", rotate: "6deg" },
     { emoji: "🎒", label: "Mochila", top: "55%", left: "5%", delay: "0.8s", rotate: "10deg" },
@@ -25,12 +35,10 @@ export default function SignUp() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-
         if (!name || !email || !password || !confirmPassword) {
             setError("Por favor completa todos los campos.");
             return;
         }
-
 
         const regexDocente = /^[a-zA-Z]+\.[a-zA-Z]+@itoaxaca\.edu\.mx$/;
         if (regexDocente.test(email)) {
@@ -39,24 +47,27 @@ export default function SignUp() {
         }
 
         const fechaActual = new Date();
-        const añoActualCorto = fechaActual.getFullYear() % 100; // Ej: 2026 -> 26
-        const mesActual = fechaActual.getMonth(); // 0 = Ene, 7 = Ago
+        const añoActualCorto = fechaActual.getFullYear() % 100;
+        const mesActual = fechaActual.getMonth();
         const diaActual = fechaActual.getDate();
-
 
         const añoMaximoValido = (mesActual > 7 || (mesActual === 7 && diaActual >= 20))
             ? añoActualCorto
             : añoActualCorto - 1;
 
-
         const regexEstudiante = /^[cC]?(\d{2})16\d{4}@itoaxaca\.edu\.mx$/;
+
         const matchEstudiante = email.match(regexEstudiante);
 
-        if (!matchEstudiante) {
-            setError("Tu correo debe tener el formato de tu número de control (Ej. 22161078 o C22161078).");
-            return;
-        }
 
+
+        if (!matchEstudiante) {
+
+            setError("Tu correo debe tener el formato de tu número de control (Ej. 22161078 o C22161078).");
+
+            return;
+
+        }
 
         const añoInscripcion = parseInt(matchEstudiante[1], 10);
 
@@ -65,12 +76,10 @@ export default function SignUp() {
             return;
         }
 
-
         if (password !== confirmPassword) {
             setError("Las contraseñas no coinciden.");
             return;
         }
-
 
         setError("");
         setLoading(true);
@@ -92,7 +101,7 @@ export default function SignUp() {
 
             if (response.ok) {
                 alert("¡Cuenta creada exitosamente! Tu registro está en revisión y se encuentra actualmente inactivo.");
-                navigate("/signin"); // Lo enviamos a que inticie sesión
+                navigate("/signin");
             } else {
                 setError(result.message || "Ocurrió un error al registrar.");
             }
@@ -157,6 +166,10 @@ export default function SignUp() {
           font-family: 'Syne', sans-serif;
           border: none; cursor: pointer;
         }
+          .btn-main:focus {
+    outline: none;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); /* Fuerza el color original */
+}
         .btn-main::after {
           content: ''; position: absolute;
           top: 0; left: -100%; width: 100%; height: 100%;
@@ -211,15 +224,14 @@ export default function SignUp() {
             <div className="uni-root uni-bg relative flex items-center justify-center px-4 py-10" style={{ minHeight: "100vh" }}>
                 <div className="grid-dots" />
 
-                {/* Floating tags */}
                 {FLOATING_ITEMS.map((item) => (
                     <div
                         key={item.label}
                         className="float-tag hidden md:block"
                         style={{
                             top: item.top,
-                            left: (item as { left?: string }).left,
-                            right: (item as { right?: string }).right,
+                            left: (item as any).left,
+                            right: (item as any).right,
                             animationDelay: item.delay,
                             ["--rot" as string]: item.rotate,
                         }}
@@ -231,9 +243,7 @@ export default function SignUp() {
                     </div>
                 ))}
 
-                {/* Register card */}
                 <div className="login-card slide-in relative z-10 w-full p-8" style={{ maxWidth: 420 }}>
-                    {/* Logo */}
                     <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
                         <div className="logo-mark">🎓</div>
                         <div>
@@ -266,7 +276,6 @@ export default function SignUp() {
                     )}
 
                     <form onSubmit={handleSubmit}>
-                        {/* Nombre */}
                         <div style={{ marginBottom: 14 }}>
                             <label style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 600, color: "#3d3530", display: "block", marginBottom: 6 }}>
                                 Nombre completo
@@ -283,7 +292,6 @@ export default function SignUp() {
                             </div>
                         </div>
 
-                        {/* Email */}
                         <div style={{ marginBottom: 14 }}>
                             <label style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 600, color: "#3d3530", display: "block", marginBottom: 6 }}>
                                 Correo institucional
@@ -300,7 +308,6 @@ export default function SignUp() {
                             </div>
                         </div>
 
-                        {/* Password */}
                         <div style={{ marginBottom: 14 }}>
                             <label style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 600, color: "#3d3530", display: "block", marginBottom: 6 }}>
                                 Contraseña
@@ -324,7 +331,6 @@ export default function SignUp() {
                             </div>
                         </div>
 
-                        {/* Confirm Password */}
                         <div style={{ marginBottom: 22 }}>
                             <label style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 600, color: "#3d3530", display: "block", marginBottom: 6 }}>
                                 Confirmar contraseña
@@ -349,7 +355,7 @@ export default function SignUp() {
                     <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#9a8f85", textAlign: "center", margin: "18px 0 0" }}>
                         ¿Ya tienes cuenta?{" "}
                         <span
-                            onClick={() => navigate("/signin")} // Asegúrate de que esta ruta coincida con tu App.tsx
+                            onClick={() => navigate("/signin")}
                             style={{ color: "#1a1a2e", fontWeight: 600, cursor: "pointer", textDecoration: "none" }}
                         >
                             Inicia sesión aquí

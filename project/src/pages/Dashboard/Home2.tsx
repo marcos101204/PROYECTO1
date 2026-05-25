@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import ProductReview from "./Productreview";
 
 const CATEGORIES = [
   { icon: "📚", name: "Libros", count: 342, color: "#fff3e8", border: "#ffd4a8" },
@@ -29,40 +30,35 @@ interface Producto {
 }
 
 export default function Home() {
+  const [reviewProductId, setReviewProductId] = useState<number | null>(null);
   const navigate = useNavigate();
   const [savedItems, setSavedItems] = useState<number[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Estado del usuario resuelto para usar las llaves correctas de localStorage
   const [usuario, setUsuario] = useState<{ nombre: string; id: number } | null>(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
-    // 1. Validar la sesión usando los mismos nombres que guarda tu SignIn
     const isAuth = localStorage.getItem("isAuth");
     const userName = localStorage.getItem("userName");
     const userId = localStorage.getItem("userId");
 
     if (isAuth !== "true" || !userName || !userId) {
-      // Si falta alguna credencial, redirigimos al login de inmediato
       navigate("/signin");
       return;
     }
 
-    // Si todo está correcto, asignamos el usuario al estado
     setUsuario({
       nombre: userName,
       id: parseInt(userId, 10)
     });
 
-    // 2. Traer los productos de la base de datos
     const fetchProductos = async () => {
       try {
         const response = await fetch("http://localhost/PROYECTO1/project/conexion/productos.php");
         const result = await response.json();
         if (result.status === "success" || result.success) {
-          // Acepta tanto .data como el array directo según devuelva tu PHP
           setProductos(result.data || result);
         }
       } catch (error) {
@@ -98,91 +94,288 @@ export default function Home() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
-        .home-root { font-family: 'DM Sans', sans-serif; padding: 20px; max-width: 1280px; margin: 0 auto; }
+
+        .home-root {
+          font-family: 'DM Sans', sans-serif;
+          padding: 20px;
+          max-width: 1280px;
+          margin: 0 auto;
+        }
+
         .hero-banner {
           background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
-          border-radius: 20px; padding: 32px 36px;
-          position: relative; overflow: hidden;
+          border-radius: 20px;
+          padding: 32px 36px;
+          position: relative;
+          overflow: hidden;
           margin-bottom: 28px;
         }
         .hero-banner::before {
-          content: ''; position: absolute; top: -40px; right: -30px;
-          width: 220px; height: 220px; border-radius: 50%;
+          content: '';
+          position: absolute;
+          top: -40px;
+          right: -30px;
+          width: 220px;
+          height: 220px;
+          border-radius: 50%;
           background: radial-gradient(circle, rgba(255,107,53,0.3) 0%, transparent 70%);
         }
         .hero-banner::after {
-          content: ''; position: absolute; bottom: -60px; right: 80px;
-          width: 160px; height: 160px; border-radius: 50%;
+          content: '';
+          position: absolute;
+          bottom: -60px;
+          right: 80px;
+          width: 160px;
+          height: 160px;
+          border-radius: 50%;
           background: radial-gradient(circle, rgba(100,160,255,0.2) 0%, transparent 70%);
         }
+
         .cat-card {
-          background: var(--cat-bg); border: 1.5px solid var(--cat-border);
-          border-radius: 16px; padding: 16px 14px;
-          cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
-          display: flex; flex-direction: column; align-items: center; gap: 8px;
+          background: var(--cat-bg);
+          border: 1.5px solid var(--cat-border);
+          border-radius: 16px;
+          padding: 16px 14px;
+          cursor: pointer;
+          transition: transform 0.15s, box-shadow 0.15s;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
         }
-        .cat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .cat-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
         .product-card {
-          background: #ffffff; border: 1.5px solid #f0ebe4;
-          border-radius: 18px; overflow: hidden;
+          background: #ffffff;
+          border: 1.5px solid #f0ebe4;
+          border-radius: 18px;
+          overflow: hidden;
           transition: transform 0.18s, box-shadow 0.18s;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
+          min-width: 0;
         }
-        .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.10); }
+        .product-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+        }
+
         .product-img {
           background: linear-gradient(135deg, #fdf6ee, #ffe8d0);
-          height: 150px; display: flex; align-items: center; justify-content: center;
-          font-size: 52px; position: relative; overflow: hidden;
+          height: 150px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 52px;
+          position: relative;
+          overflow: hidden;
         }
         .product-img img {
-          width: 100%; height: 100%; object-fit: cover;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
+
         .save-btn {
-          position: absolute; top: 10px; right: 10px;
-          background: rgba(255,255,255,0.9); border: none;
-          border-radius: 50%; width: 32px; height: 32px;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; font-size: 15px; transition: transform 0.15s;
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: rgba(255,255,255,0.9);
+          border: none;
+          border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 15px;
+          transition: transform 0.15s;
           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .save-btn:hover { transform: scale(1.15); }
+
         .discount-tag {
-          position: absolute; top: 10px; left: 10px;
-          background: #ff6b35; color: white;
-          font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px;
-          padding: 3px 8px; border-radius: 8px;
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          background: #ff6b35;
+          color: white;
+          font-family: 'Syne', sans-serif;
+          font-weight: 700;
+          font-size: 11px;
+          padding: 3px 8px;
+          border-radius: 8px;
         }
         .condition-tag {
-          font-family: 'DM Sans', sans-serif; font-size: 11px;
-          padding: 2px 8px; border-radius: 20px;
-          background: #f5f0e8; color: #7a6a58; border: 1px solid #e8ddd0;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 11px;
+          padding: 2px 8px;
+          border-radius: 20px;
+          background: #f5f0e8;
+          color: #7a6a58;
+          border: 1px solid #e8ddd0;
         }
+
         .add-cart-btn {
-          width: 100%; background: #1a1a2e; color: white;
-          border: none; border-radius: 10px; padding: 9px;
-          font-family: 'Syne', sans-serif; font-weight: 600; font-size: 13px;
-          cursor: pointer; transition: background 0.15s; margin-top: 10px;
+          width: 100%;
+          background: #1a1a2e;
+          color: white;
+          border: none;
+          border-radius: 10px;
+          padding: 9px;
+          font-family: 'Syne', sans-serif;
+          font-weight: 600;
+          font-size: 13px;
+          cursor: pointer;
+          transition: background 0.15s;
+          margin-top: 10px;
         }
         .add-cart-btn:hover { background: #2d4a7a; }
+
+        .comment-btn {
+          width: 100%;
+          margin-top: 6px;
+          background: transparent;
+          border: 1.5px solid #e8ddd0;
+          border-radius: 10px;
+          padding: 7px;
+          font-family: 'Syne', sans-serif;
+          font-weight: 600;
+          font-size: 12.5px;
+          color: #5a5248;
+          cursor: pointer;
+          transition: background 0.15s, border-color 0.15s;
+        }
+        .comment-btn:hover {
+          background: #f5f0ea;
+          border-color: #d4c8bc;
+        }
+        .comment-btn.active {
+          background: #f0ebe4;
+          border-color: #d4c8bc;
+        }
+
+        .review-panel {
+          margin-top: 16px;
+          padding: 20px 24px;
+          background: #fdf9f5;
+          border: 1.5px solid #f0ebe4;
+          border-radius: 18px;
+          animation: slideDown 0.2s ease;
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .review-root { font-family: 'DM Sans', sans-serif; }
+
+        .review-textarea {
+          width: 100%;
+          box-sizing: border-box;
+          border: 1.5px solid #e8ddd0;
+          border-radius: 12px;
+          padding: 12px 14px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 13.5px;
+          color: #1a1a2e;
+          resize: vertical;
+          min-height: 90px;
+          outline: none;
+          background: #fdf9f5;
+          transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .review-textarea:focus {
+          border-color: #ff6b35;
+          box-shadow: 0 0 0 3px rgba(255,107,53,0.12);
+        }
+
+        .review-submit-btn {
+          background: linear-gradient(135deg, #ff6b35, #f7931e);
+          border: none;
+          border-radius: 12px;
+          padding: 10px 26px;
+          color: white;
+          font-family: 'Syne', sans-serif;
+          font-weight: 700;
+          font-size: 13.5px;
+          cursor: pointer;
+          transition: opacity 0.15s, transform 0.15s;
+        }
+        .review-submit-btn:hover:not(:disabled) {
+          opacity: 0.88;
+          transform: translateY(-1px);
+        }
+        .review-submit-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .review-card {
+          background: #fdf9f5;
+          border: 1.5px solid #f0ebe4;
+          border-radius: 14px;
+          padding: 14px 16px;
+          transition: box-shadow 0.15s;
+        }
+        .review-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+
+        .bar-fill {
+          height: 7px;
+          border-radius: 99px;
+          background: linear-gradient(90deg, #ff6b35, #f7931e);
+          transition: width 0.5s ease;
+        }
+
+        .alert-success {
+          background: #eafff3;
+          border: 1.5px solid #b0f0cb;
+          border-radius: 10px;
+          padding: 10px 14px;
+          font-size: 13px;
+          color: #1a6b40;
+          font-family: 'DM Sans', sans-serif;
+        }
+        .alert-error {
+          background: #fff3f3;
+          border: 1.5px solid #fbb8b8;
+          border-radius: 10px;
+          padding: 10px 14px;
+          font-size: 13px;
+          color: #c0392b;
+          font-family: 'DM Sans', sans-serif;
+        }
+
         .activity-item {
-          display: flex; align-items: center; gap: 12px;
-          padding: 10px 0; border-bottom: 1px solid #f5f0ea;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px 0;
+          border-bottom: 1px solid #f5f0ea;
         }
         .activity-item:last-child { border-bottom: none; }
+
         .section-title {
-          font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px;
-          color: #1a1a2e; margin: 0 0 16px;
+          font-family: 'Syne', sans-serif;
+          font-weight: 800;
+          font-size: 17px;
+          color: #1a1a2e;
+          margin: 0 0 16px;
         }
         .card-surface {
-          background: #ffffff; border: 1.5px solid #f0ebe4;
-          border-radius: 18px; padding: 20px;
+          background: #ffffff;
+          border: 1.5px solid #f0ebe4;
+          border-radius: 18px;
+          padding: 20px;
         }
       `}</style>
 
       <div className="home-root">
-        {/* Top Header */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', alignItems: 'center', gap: 12 }}>
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 'bold', color: '#1a1a2e' }}>
             Hola, {usuario?.nombre || "Cargando..."} 👋
@@ -195,7 +388,6 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Hero Banner */}
         <div className="hero-banner">
           <div style={{ position: "relative", zIndex: 1 }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,107,53,0.2)", border: "1px solid rgba(255,107,53,0.4)", borderRadius: 20, padding: "4px 12px", marginBottom: 12 }}>
@@ -227,7 +419,6 @@ export default function Home() {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, alignItems: "start" }}>
 
-          {/* Columna Izquierda */}
           <div>
             <h2 className="section-title">Explorar categorías</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 28 }}>
@@ -246,7 +437,6 @@ export default function Home() {
               <a href="#" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#ff6b35", fontWeight: 500, textDecoration: "none" }}>Ver todas →</a>
             </div>
 
-            {/* Renderizado de Productos */}
             {loading ? (
               <p style={{ textAlign: "center", color: "#9a8f85", padding: "40px" }}>Cargando productos...</p>
             ) : productos.length === 0 ? (
@@ -259,49 +449,51 @@ export default function Home() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 8 }}>
                 {productos.map((p) => {
                   const originalPrice = getFakeOriginalPrice(p.precio);
+                  const isSaved = savedItems.includes(p.id_producto);
+
                   return (
                     <div key={p.id_producto} className="product-card">
-                      <div>
-                        <div className="product-img">
-                          {p.imagen_url ? (
-                            <img src={p.imagen_url} alt={p.titulo} />
-                          ) : (
-                            <span>{p.icono || "📦"}</span>
-                          )}
-                          <button className="save-btn" onClick={() => toggleSave(p.id_producto)}>
-                            {savedItems.includes(p.id_producto) ? "❤️" : "🤍"}
-                          </button>
-                          <div className="discount-tag">-{discount(p.precio, originalPrice)}%</div>
-                        </div>
-
-                        <div style={{ padding: "12px 12px 0" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6, flexWrap: "wrap" }}>
-                            <span className="condition-tag">{p.condicion}</span>
-                            <span className="condition-tag" style={{ background: '#e8f0ff', color: '#2d4a7a', borderColor: '#b8ceff' }}>{p.categoria}</span>
-                          </div>
-
-                          <p style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, color: "#1a1a2e", margin: "0 0 6px", lineHeight: 1.35, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {p.titulo}
-                          </p>
-
-                          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
-                            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 17, color: "#ff6b35" }}>
-                              ${parseFloat(p.precio.toString()).toLocaleString()}
-                            </span>
-                            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#b0a898", textDecoration: "line-through" }}>
-                              ${originalPrice.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
+                      <div className="product-img">
+                        {p.imagen_url ? (
+                          <img src={p.imagen_url} alt={p.titulo} />
+                        ) : (
+                          <span>{p.icono || "📦"}</span>
+                        )}
+                        <div className="discount-tag">-{discount(p.precio, originalPrice)}%</div>
+                        <button className="save-btn" onClick={() => toggleSave(p.id_producto)}>
+                          {isSaved ? "❤️" : "🤍"}
+                        </button>
                       </div>
 
-                      <div style={{ padding: "0 12px 14px" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ padding: "14px 12px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                          <div>
+                            <h3 style={{ margin: "0 0 4px", fontSize: 15, fontFamily: "'Syne', sans-serif", color: "#1a1a2e" }}>{p.titulo}</h3>
+                            <p style={{ margin: 0, fontSize: 12, color: "#9a8f85" }}>{p.categoria}</p>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontWeight: 800, fontSize: 16, color: "#1a1a2e" }}>${p.precio}</div>
+                            <div style={{ textDecoration: "line-through", fontSize: 11, color: "#9a8f85" }}>${originalPrice}</div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+                          <span className="condition-tag">{p.condicion}</span>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                           <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#9a8f85" }}>
                             👤 {p.vendedor}
                           </span>
                         </div>
+
                         <button className="add-cart-btn">Contactar vendedor</button>
+                        <button
+                          className="comment-btn"
+                          onClick={() => setReviewProductId(p.id_producto)}
+                        >
+                          💬 Ver / Comentar
+                        </button>
                       </div>
                     </div>
                   );
@@ -310,7 +502,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Columna Derecha */}
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             <div className="card-surface">
               <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 14, color: "#1a1a2e", margin: "0 0 14px" }}>Tu actividad</h3>
@@ -356,7 +547,6 @@ export default function Home() {
 
         </div>
 
-        {/* Modal de confirmación para cerrar sesión */}
         {showLogoutConfirm && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }}>
             <div style={{ width: 360, background: '#fff', borderRadius: 12, padding: 18, boxShadow: '0 20px 50px rgba(0,0,0,0.3)', textAlign: 'center' }}>
@@ -366,6 +556,21 @@ export default function Home() {
                 <button onClick={() => setShowLogoutConfirm(false)} style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #e8e0d8', background: 'transparent', cursor: 'pointer' }}>Cancelar</button>
                 <button onClick={() => { setShowLogoutConfirm(false); logout(); }} style={{ padding: '8px 12px', borderRadius: 10, border: 'none', background: '#d23a2a', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Cerrar sesión</button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {reviewProductId !== null && usuario && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+            <div style={{ width: '90%', maxWidth: 600, background: '#fff', borderRadius: 16, padding: 24, position: 'relative', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+              <button
+                onClick={() => setReviewProductId(null)}
+                style={{ position: 'absolute', top: 16, right: 16, background: '#f0ebe4', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1a1a2e' }}
+              >
+                ✕
+              </button>
+              <h2 style={{ marginTop: 0, marginBottom: 20, fontFamily: "'Syne', sans-serif", fontSize: 20, color: '#1a1a2e' }}>Comentarios y Reseñas</h2>
+              <ProductReview id_producto={reviewProductId} id_usuario={usuario.id} />
             </div>
           </div>
         )}

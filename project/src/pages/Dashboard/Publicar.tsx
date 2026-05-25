@@ -16,24 +16,34 @@ const CONDICIONES = ["Nuevo", "Como nuevo", "Buen estado", "Aceptable"];
 export default function Publicar() {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState<{ nombre: string; id: number } | null>(null);
-  
+
   const [titulo, setTitulo] = useState("");
   const [precio, setPrecio] = useState("");
   const [condicion, setCondicion] = useState(CONDICIONES[2]); // Por defecto: Buen estado
   const [categoria, setCategoria] = useState(CATEGORIAS_DB[0].id.toString());
   const [imagen, setImagen] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const userStorage = localStorage.getItem("user_markito");
-    if (!userStorage) {
+    // 1. Buscamos las mismas llaves que usas en Home.tsx
+    const isAuth = localStorage.getItem("isAuth");
+    const userName = localStorage.getItem("userName");
+    const userId = localStorage.getItem("userId");
+
+    // 2. Si no hay sesión válida, lo mandamos al login
+    if (isAuth !== "true" || !userName || !userId) {
       navigate("/signin");
       return;
     }
-    setUsuario(JSON.parse(userStorage));
+
+    // 3. Si todo está correcto, asignamos el usuario al estado
+    setUsuario({
+      nombre: userName,
+      id: parseInt(userId, 10)
+    });
   }, [navigate]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +71,7 @@ export default function Publicar() {
     formData.append("condicion", condicion);
     formData.append("id_categoria", categoria);
     formData.append("id_vendedor", usuario.id.toString());
-    
+
     if (imagen) {
       formData.append("imagen", imagen);
     }
@@ -70,7 +80,7 @@ export default function Publicar() {
       const response = await fetch("http://localhost/markito-api/publicar.php", {
         method: "POST",
         // NOTA: Cuando usas FormData NO debes poner 'Content-Type': 'application/json'
-        body: formData, 
+        body: formData,
       });
 
       const result = await response.json();
@@ -130,12 +140,12 @@ export default function Publicar() {
 
       <div className="pub-root">
         <div className="pub-container">
-          
+
           <div className="flex items-center gap-4 mb-8 cursor-pointer" onClick={() => navigate("/")}>
-            <div style={{background: '#ffffff', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', fontWeight: 'bold'}}>
+            <div style={{ background: '#ffffff', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', fontWeight: 'bold' }}>
               ←
             </div>
-            <h1 style={{fontFamily: "'Syne', sans-serif", fontSize: '24px', fontWeight: 800, color: '#1a1a2e', margin: 0}}>
+            <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '24px', fontWeight: 800, color: '#1a1a2e', margin: 0 }}>
               Vender un artículo
             </h1>
           </div>
@@ -148,44 +158,44 @@ export default function Publicar() {
             )}
 
             <form onSubmit={handleSubmit}>
-              
+
               {/* FOTO DEL PRODUCTO */}
-              <div style={{marginBottom: '24px'}}>
-                <label style={{display: 'block', fontWeight: 700, marginBottom: '8px', color: '#3d3530'}}>Fotos del producto</label>
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontWeight: 700, marginBottom: '8px', color: '#3d3530' }}>Fotos del producto</label>
                 <label className="img-upload-box">
                   {previewUrl ? (
-                    <img src={previewUrl} alt="Preview" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                    <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <>
-                      <span style={{fontSize: '32px', marginBottom: '8px'}}>📸</span>
-                      <span style={{color: '#9a8f85', fontSize: '14px', fontWeight: 500}}>Sube una foto clara de lo que vendes</span>
+                      <span style={{ fontSize: '32px', marginBottom: '8px' }}>📸</span>
+                      <span style={{ color: '#9a8f85', fontSize: '14px', fontWeight: 500 }}>Sube una foto clara de lo que vendes</span>
                     </>
                   )}
-                  <input type="file" accept="image/*" onChange={handleImageChange} style={{display: 'none'}} />
+                  <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
                 </label>
               </div>
 
               {/* TÍTULO */}
-              <div style={{marginBottom: '20px'}}>
-                <label style={{display: 'block', fontWeight: 700, marginBottom: '8px', color: '#3d3530'}}>¿Qué estás vendiendo?</label>
-                <input 
-                  type="text" 
-                  value={titulo} 
-                  onChange={(e) => setTitulo(e.target.value)} 
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontWeight: 700, marginBottom: '8px', color: '#3d3530' }}>¿Qué estás vendiendo?</label>
+                <input
+                  type="text"
+                  value={titulo}
+                  onChange={(e) => setTitulo(e.target.value)}
                   placeholder="Ej. Libro de Cálculo Diferencial 7ma Ed."
                   className="uni-input"
                   maxLength={60}
                 />
               </div>
 
-              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px'}}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
                 {/* PRECIO */}
                 <div>
-                  <label style={{display: 'block', fontWeight: 700, marginBottom: '8px', color: '#3d3530'}}>Precio ($ MXN)</label>
-                  <input 
-                    type="number" 
-                    value={precio} 
-                    onChange={(e) => setPrecio(e.target.value)} 
+                  <label style={{ display: 'block', fontWeight: 700, marginBottom: '8px', color: '#3d3530' }}>Precio ($ MXN)</label>
+                  <input
+                    type="number"
+                    value={precio}
+                    onChange={(e) => setPrecio(e.target.value)}
                     placeholder="Ej. 250"
                     className="uni-input"
                     min="1"
@@ -194,7 +204,7 @@ export default function Publicar() {
 
                 {/* CONDICIÓN */}
                 <div>
-                  <label style={{display: 'block', fontWeight: 700, marginBottom: '8px', color: '#3d3530'}}>Condición</label>
+                  <label style={{ display: 'block', fontWeight: 700, marginBottom: '8px', color: '#3d3530' }}>Condición</label>
                   <select value={condicion} onChange={(e) => setCondicion(e.target.value)} className="uni-select">
                     {CONDICIONES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -202,8 +212,8 @@ export default function Publicar() {
               </div>
 
               {/* CATEGORÍA */}
-              <div style={{marginBottom: '32px'}}>
-                <label style={{display: 'block', fontWeight: 700, marginBottom: '8px', color: '#3d3530'}}>Categoría</label>
+              <div style={{ marginBottom: '32px' }}>
+                <label style={{ display: 'block', fontWeight: 700, marginBottom: '8px', color: '#3d3530' }}>Categoría</label>
                 <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="uni-select">
                   {CATEGORIAS_DB.map(c => (
                     <option key={c.id} value={c.id}>{c.emoji} {c.nombre}</option>

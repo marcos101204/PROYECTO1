@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 
 const CATEGORIES = [
@@ -17,7 +17,6 @@ const RECENT_ACTIVITY = [
   { user: "Luis R.", action: "bajó el precio de", item: "Química Orgánica", time: "hace 1 hora", emoji: "🏷️" },
 ];
 
-// Interfaz para los productos que vienen de PHP
 interface Producto {
   id_producto: number;
   titulo: string;
@@ -32,28 +31,39 @@ interface Producto {
 export default function Home() {
   const navigate = useNavigate();
   const [savedItems, setSavedItems] = useState<number[]>([]);
-  
-  // Nuevos estados para la conexión con el backend
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Estado del usuario resuelto para usar las llaves correctas de localStorage
   const [usuario, setUsuario] = useState<{ nombre: string; id: number } | null>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
-    // 1. Validar que el usuario haya iniciado sesión
-    const userStorage = localStorage.getItem("user_markito");
-    if (!userStorage) {
+    // 1. Validar la sesión usando los mismos nombres que guarda tu SignIn
+    const isAuth = localStorage.getItem("isAuth");
+    const userName = localStorage.getItem("userName");
+    const userId = localStorage.getItem("userId");
+
+    if (isAuth !== "true" || !userName || !userId) {
+      // Si falta alguna credencial, redirigimos al login de inmediato
       navigate("/signin");
       return;
     }
-    setUsuario(JSON.parse(userStorage));
 
-    // 2. Traer los productos reales de la base de datos
+    // Si todo está correcto, asignamos el usuario al estado
+    setUsuario({
+      nombre: userName,
+      id: parseInt(userId, 10)
+    });
+
+    // 2. Traer los productos de la base de datos
     const fetchProductos = async () => {
       try {
-        const response = await fetch("http://localhost/markito-api/productos.php");
+        const response = await fetch("http://localhost/PROYECTO1/project/conexion/productos.php");
         const result = await response.json();
-        if (result.status === "success") {
-          setProductos(result.data);
+        if (result.status === "success" || result.success) {
+          // Acepta tanto .data como el array directo según devuelva tu PHP
+          setProductos(result.data || result);
         }
       } catch (error) {
         console.error("Error al cargar productos:", error);
@@ -65,11 +75,22 @@ export default function Home() {
     fetchProductos();
   }, [navigate]);
 
+  const logout = () => {
+    try {
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('isAuth');
+    } catch (e) {
+      console.warn('Error clearing storage', e);
+    }
+    navigate('/signin');
+  };
+
   const toggleSave = (id: number) => {
     setSavedItems((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
   };
 
-  // Función falsa de descuento para mantener la estética de tu diseño original
   const getFakeOriginalPrice = (price: number) => Math.round(price * 1.25);
   const discount = (price: number, original: number) => Math.round((1 - price / original) * 100);
 
@@ -105,6 +126,9 @@ export default function Home() {
           background: #ffffff; border: 1.5px solid #f0ebe4;
           border-radius: 18px; overflow: hidden;
           transition: transform 0.18s, box-shadow 0.18s;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
         }
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.10); }
         .product-img {
@@ -158,19 +182,27 @@ export default function Home() {
       `}</style>
 
       <div className="home-root">
-        {/* Top Header - Nombre del usuario dinámico */}
-        <div style={{display: 'flex', justifyContent: 'flex-end', marginBottom: '16px'}}>
-          <span style={{fontFamily: "'Syne', sans-serif", fontWeight: 'bold', color: '#1a1a2e'}}>
-            Hola, {usuario?.nombre} 👋
+        {/* Top Header */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 'bold', color: '#1a1a2e' }}>
+            Hola, {usuario?.nombre || "Cargando..."} 👋
           </span>
+          <button onClick={() => navigate('/mi-perfil')} style={{ background: '#ff6b35', color: 'white', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>
+            Mi Perfil
+          </button>
+          <button onClick={() => setShowLogoutConfirm(true)} style={{ background: 'transparent', color: '#d23a2a', border: '1.5px solid #f5d8d6', borderRadius: 10, padding: '8px 12px', fontWeight: 700, cursor: 'pointer' }}>
+            Cerrar sesión
+          </button>
         </div>
 
-        {/* Hero Banner original */}
+        {/* Hero Banner */}
         <div className="hero-banner">
           <div style={{ position: "relative", zIndex: 1 }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,107,53,0.2)", border: "1px solid rgba(255,107,53,0.4)", borderRadius: 20, padding: "4px 12px", marginBottom: 12 }}>
               <span style={{ fontSize: 12 }}>🔥</span>
-              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#ff8c5a", fontWeight: 500 }}>{productos.length} productos disponibles hoy</span>
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#ff8c5a", fontWeight: 500 }}>
+                {productos.length} productos disponibles hoy
+              </span>
             </div>
             <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 28, color: "#ffffff", letterSpacing: "-0.03em", margin: "0 0 8px", lineHeight: 1.2 }}>
               Compra y vende entre<br />
@@ -194,8 +226,8 @@ export default function Home() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, alignItems: "start" }}>
-          
-          {/* Left column */}
+
+          {/* Columna Izquierda */}
           <div>
             <h2 className="section-title">Explorar categorías</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 28 }}>
@@ -213,15 +245,15 @@ export default function Home() {
               <h2 className="section-title" style={{ margin: 0 }}>Publicaciones recientes</h2>
               <a href="#" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#ff6b35", fontWeight: 500, textDecoration: "none" }}>Ver todas →</a>
             </div>
-            
-            {/* PRODUCTOS REALES DESDE LA BASE DE DATOS */}
+
+            {/* Renderizado de Productos */}
             {loading ? (
-              <p style={{textAlign: "center", color: "#9a8f85", padding: "40px"}}>Cargando productos...</p>
+              <p style={{ textAlign: "center", color: "#9a8f85", padding: "40px" }}>Cargando productos...</p>
             ) : productos.length === 0 ? (
-              <div style={{textAlign: "center", padding: "40px", background: "white", borderRadius: "18px", border: "1.5px solid #f0ebe4"}}>
-                 <span style={{fontSize: "40px"}}>🏜️</span>
-                 <p style={{color: "#1a1a2e", fontWeight: "bold"}}>No hay productos aún.</p>
-                 <p style={{color: "#9a8f85", fontSize: "14px"}}>Sé el primero en vender algo.</p>
+              <div style={{ textAlign: "center", padding: "40px", background: "white", borderRadius: "18px", border: "1.5px solid #f0ebe4" }}>
+                <span style={{ fontSize: "40px" }}>🏜️</span>
+                <p style={{ color: "#1a1a2e", fontWeight: "bold" }}>No hay productos aún.</p>
+                <p style={{ color: "#9a8f85", fontSize: "14px" }}>Sé el primero en vender algo.</p>
               </div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 8 }}>
@@ -229,43 +261,46 @@ export default function Home() {
                   const originalPrice = getFakeOriginalPrice(p.precio);
                   return (
                     <div key={p.id_producto} className="product-card">
-                      <div className="product-img">
-                        {p.imagen_url ? (
-                          <img src={p.imagen_url} alt={p.titulo} />
-                        ) : (
-                          <span>{p.icono || "📦"}</span>
-                        )}
-                        <button className="save-btn" onClick={() => toggleSave(p.id_producto)}>
-                          {savedItems.includes(p.id_producto) ? "❤️" : "🤍"}
-                        </button>
-                        <div className="discount-tag">-{discount(p.precio, originalPrice)}%</div>
+                      <div>
+                        <div className="product-img">
+                          {p.imagen_url ? (
+                            <img src={p.imagen_url} alt={p.titulo} />
+                          ) : (
+                            <span>{p.icono || "📦"}</span>
+                          )}
+                          <button className="save-btn" onClick={() => toggleSave(p.id_producto)}>
+                            {savedItems.includes(p.id_producto) ? "❤️" : "🤍"}
+                          </button>
+                          <div className="discount-tag">-{discount(p.precio, originalPrice)}%</div>
+                        </div>
+
+                        <div style={{ padding: "12px 12px 0" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6, flexWrap: "wrap" }}>
+                            <span className="condition-tag">{p.condicion}</span>
+                            <span className="condition-tag" style={{ background: '#e8f0ff', color: '#2d4a7a', borderColor: '#b8ceff' }}>{p.categoria}</span>
+                          </div>
+
+                          <p style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, color: "#1a1a2e", margin: "0 0 6px", lineHeight: 1.35, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {p.titulo}
+                          </p>
+
+                          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
+                            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 17, color: "#ff6b35" }}>
+                              ${parseFloat(p.precio.toString()).toLocaleString()}
+                            </span>
+                            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#b0a898", textDecoration: "line-through" }}>
+                              ${originalPrice.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      
-                      <div style={{ padding: "12px 12px 14px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 6, flexWrap: "wrap" }}>
-                          <span className="condition-tag">{p.condicion}</span>
-                          <span className="condition-tag" style={{background: '#e8f0ff', color: '#2d4a7a', borderColor: '#b8ceff'}}>{p.categoria}</span>
-                        </div>
-                        
-                        <p style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, color: "#1a1a2e", margin: "0 0 6px", lineHeight: 1.35, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {p.titulo}
-                        </p>
-                        
-                        <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
-                          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 17, color: "#ff6b35" }}>
-                            ${parseFloat(p.precio.toString()).toLocaleString()}
-                          </span>
-                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "#b0a898", textDecoration: "line-through" }}>
-                            ${originalPrice.toLocaleString()}
-                          </span>
-                        </div>
-                        
+
+                      <div style={{ padding: "0 12px 14px" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "#9a8f85" }}>
                             👤 {p.vendedor}
                           </span>
                         </div>
-                        
                         <button className="add-cart-btn">Contactar vendedor</button>
                       </div>
                     </div>
@@ -275,9 +310,8 @@ export default function Home() {
             )}
           </div>
 
-          {/* Right column */}
+          {/* Columna Derecha */}
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            
             <div className="card-surface">
               <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 14, color: "#1a1a2e", margin: "0 0 14px" }}>Tu actividad</h3>
               {[
@@ -318,9 +352,23 @@ export default function Home() {
                 </div>
               ))}
             </div>
-
           </div>
+
         </div>
+
+        {/* Modal de confirmación para cerrar sesión */}
+        {showLogoutConfirm && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }}>
+            <div style={{ width: 360, background: '#fff', borderRadius: 12, padding: 18, boxShadow: '0 20px 50px rgba(0,0,0,0.3)', textAlign: 'center' }}>
+              <h3 style={{ margin: 0, fontFamily: "'Syne', sans-serif", fontSize: 18 }}>¿Cerrar sesión?</h3>
+              <p style={{ color: '#6b6b6b', marginTop: 8 }}>Confirma que deseas cerrar tu sesión actual.</p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 14 }}>
+                <button onClick={() => setShowLogoutConfirm(false)} style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #e8e0d8', background: 'transparent', cursor: 'pointer' }}>Cancelar</button>
+                <button onClick={() => { setShowLogoutConfirm(false); logout(); }} style={{ padding: '8px 12px', borderRadius: 10, border: 'none', background: '#d23a2a', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Cerrar sesión</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

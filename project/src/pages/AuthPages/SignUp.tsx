@@ -91,8 +91,8 @@ export default function SignUp() {
             const result = await response.json();
 
             if (response.ok) {
-                alert("¡Cuenta creada exitosamente!");
-                navigate("/signin"); // Lo enviamos a que inicie sesión
+                alert("¡Cuenta creada exitosamente! Tu registro está en revisión y se encuentra actualmente inactivo.");
+                navigate("/signin"); // Lo enviamos a que inticie sesión
             } else {
                 setError(result.message || "Ocurrió un error al registrar.");
             }

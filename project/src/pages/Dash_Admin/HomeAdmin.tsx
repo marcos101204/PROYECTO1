@@ -31,10 +31,11 @@ interface UsuarioDB {
 interface Reporte {
     id_reporte: number;
     id_producto: number;
-    id_usuario_reporta: number;
+    id_usuario_emisor: number;   // ← nombre real del campo
+    nombre_usuario: string;
     motivo: string;
     fecha_reporte: string;
-    estado: string; // 'Pendiente', 'Revisado', 'Resuelto'
+    estado: string;
 }
 
 export default function HomeAdmin() {
@@ -347,7 +348,9 @@ const TablaReportes = ({ data }: { data: Reporte[] }) => (
                 <tr key={r.id_reporte}>
                     <td>{r.id_reporte}</td>
                     <td>{r.id_producto}</td>
-                    <td>{r.id_usuario_reporta}</td>
+                    <td className="category-name">
+                        {r.nombre_usuario || `#${r.id_usuario_emisor}`}
+                    </td>
                     <td>{r.motivo}</td>
                     <td>{r.fecha_reporte}</td>
                     <td>

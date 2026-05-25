@@ -15,17 +15,27 @@ try {
 
     switch ($method) {
         case 'GET':
-            if (isset($_GET['id'])) {
-                $stmt = $pdo->prepare("SELECT * FROM categoria WHERE id_categoria = ?");
-                $stmt->execute([$_GET['id']]);
-                $data = $stmt->fetch(PDO::FETCH_ASSOC);
-                echo json_encode(["status" => "success", "data" => $data]);
-            } else {
-                $stmt = $pdo->query("SELECT * FROM categoria ORDER BY nombre ASC");
-                $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                echo json_encode(["status" => "success", "data" => $data]);
-            }
-            break;
+    if (isset($_GET['id'])) {
+        $stmt = $pdo->prepare("
+            SELECT r.*, u.nombre_completo AS nombre_usuario
+            FROM reporte r
+            LEFT JOIN usuario u ON r.id_usuario_emisor = u.id_usuario
+            WHERE r.id_reporte = ?
+        ");
+        $stmt->execute([$_GET['id']]);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        echo json_encode(["status" => "success", "data" => $data]);
+    } else {
+        $stmt = $pdo->query("
+            SELECT r.*, u.nombre_completo AS nombre_usuario
+            FROM reporte r
+            LEFT JOIN usuario u ON r.id_usuario_emisor = u.id_usuario
+            ORDER BY r.fecha_reporte DESC
+        ");
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode(["status" => "success", "data" => $data]);
+    }
+    break;
 
         case 'POST':
             $data = json_decode(file_get_contents('php://input'), true);

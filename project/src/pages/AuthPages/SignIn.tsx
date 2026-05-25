@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router";
 import "./estilosis.css";
-
+import { Link } from 'react-router';
 
 interface FloatingItem {
   emoji: string;
@@ -32,6 +32,7 @@ export default function SignIn() {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
+  // Formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email || !password) {
@@ -42,7 +43,6 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      // 🛠️ URL corregida apuntando directamente a la ubicación de tu backend
       const response = await fetch('http://localhost/PROYECTO1/project/conexion/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,39 +54,32 @@ export default function SignIn() {
 
       if (response.status === 401) {
         const errorData = await response.json();
-        setError(errorData.message || "Correo o contraseña incorrectos");
+        setError(errorData.message); // Esto dirá "Correo o contraseña incorrectos"
         setLoading(false);
         return;
       }
 
       const data = await response.json();
 
-      // 👁️ Abre la consola (F12) para ver qué te devuelve exactamente el servidor PHP
-      console.log("Respuesta del servidor PHP:", data);
-
-      if (data.success || data.status === "success") {
-        // Tolerancia a fallos por diferencias de nombrado entre PHP y JS
-        const userId = data.id ?? data.id_usuario ?? "";
-        const userRole = data.rol ?? data.rol_usuario ?? "";
-        const userName = data.nombre ?? data.nombre_completo ?? "";
-
-        localStorage.setItem("userRole", userRole);
-        localStorage.setItem("userName", userName);
-        localStorage.setItem("userId", userId.toString());
+      if (data.success) {
+        // Guardar en localStorage
+        localStorage.setItem("userRole", data.rol);
+        localStorage.setItem("userName", data.nombre);
+        localStorage.setItem("userId", data.id.toString());
         localStorage.setItem("isAuth", "true");
 
-        const rol = userRole.toLowerCase().trim();
+        // Redirección lógica según el rol
+        const rol = data.rol.toLowerCase().trim();
         if (rol === "admin" || rol === "administrador") {
           navigate("/HomeAdmin");
         } else {
           navigate("/Home2");
         }
       } else {
-
         setError(data.message || "Credenciales incorrectas.");
       }
     } catch (err) {
-      setError("Error de conexión. Revisa que Apache (XAMPP) esté encendido y la URL sea correcta.");
+      setError("Error de conexión. Revisa que Apache (XAMPP) esté encendido.");
       console.error("Fetch error:", err);
     } finally {
       setLoading(false);
@@ -106,8 +99,8 @@ export default function SignIn() {
             left: item.left,
             right: item.right,
             animationDelay: item.delay,
-            transform: `rotate(${item.rotate})`
-          }}
+            ["--rot" as any]: item.rotate,
+          } as React.CSSProperties}
         >
           <div className="tag-pill">
             <span>{item.emoji}</span> {item.label}
@@ -130,7 +123,7 @@ export default function SignIn() {
           Bienvenido de <span className="highlight">regreso</span> 👋
         </h1>
 
-        {error && <div className="error-box">⚠️ {error}</div>}
+        {error && <div className="error-box">⚠️ Tu cuenta se encuentra pendiente de validacion o desactivada</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
@@ -142,8 +135,9 @@ export default function SignIn() {
                 className="uni-input"
                 placeholder="usuario@universidad.edu"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                 required
+                autoComplete="username"
               />
             </div>
           </div>
@@ -157,8 +151,9 @@ export default function SignIn() {
                 className="uni-input"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
               />
               <button
                 type="button"

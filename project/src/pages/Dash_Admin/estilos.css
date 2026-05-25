@@ -675,3 +675,67 @@ body {
     letter-spacing: -0.03em;
     margin: 0 0 10px 0;
 }
+
+/* --- SECCIÓN: CENTRO DE REPORTES --- */
+
+.reportes-view-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Badges de estado de reporte */
+.badge-estado {
+    padding: 6px 12px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    display: inline-block;
+}
+
+.badge-estado.pendiente {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.badge-estado.revisado {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.badge-estado.resuelto {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* Botones de acción específicos de reportes */
+.btn-action-reporte {
+    background: #f3f4f6;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-action-reporte.revisado {
+    color: #0369a1;
+}
+
+.btn-action-reporte.revisado:hover {
+    background-color: #e0f2fe;
+    color: #075985;
+}
+
+.btn-action-reporte.resuelto {
+    color: #065f46;
+}
+
+.btn-action-reporte.resuelto:hover {
+    background-color: #d1fae5;
+    color: #064e3b;
+}

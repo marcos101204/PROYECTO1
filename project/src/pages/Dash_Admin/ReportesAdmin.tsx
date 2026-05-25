@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import "./estilos.css";
 
 interface Reporte {
   id_reporte: number;
   id_producto: number;
   id_usuario_reporta: number;
+  nombre_usuario: string;   // ← nuevo campo del JOIN
   motivo: string;
   fecha_reporte: string;
   estado: string;
@@ -35,7 +37,8 @@ export default function ReportesAdmin() {
   const updateEstado = async (id: number, estado: string) => {
     try {
       const res = await fetch(API, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_reporte: id, estado })
       });
       const j = await res.json();
@@ -55,34 +58,81 @@ export default function ReportesAdmin() {
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Centro de Reportes</h2>
-      {loading && <p>Cargando...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th>ID</th><th>Producto</th><th>Usuario</th><th>Motivo</th><th>Fecha</th><th>Estado</th><th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reportes.map(r => (
-            <tr key={r.id_reporte} style={{ borderTop: '1px solid #eee' }}>
-              <td>{r.id_reporte}</td>
-              <td>{r.id_producto}</td>
-              <td>{r.id_usuario_reporta}</td>
-              <td style={{ maxWidth: 300 }}>{r.motivo}</td>
-              <td>{r.fecha_reporte}</td>
-              <td>{r.estado}</td>
-              <td>
-                <button onClick={() => updateEstado(r.id_reporte, 'Revisado')} style={{ marginRight: 8 }}>Marcar Revisado</button>
-                <button onClick={() => updateEstado(r.id_reporte, 'Resuelto')} style={{ marginRight: 8 }}>Marcar Resuelto</button>
-                <button onClick={() => eliminar(r.id_reporte)} style={{ color: 'red' }}>Eliminar</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="reportes-view-container">
+
+      <div className="main-header">
+        <h1 className="main-section-title">Centro de Reportes</h1>
+      </div>
+
+      {loading && <p className="loader">Cargando reportes...</p>}
+      {error && <p style={{ color: 'var(--danger-color)', fontWeight: 600 }}>{error}</p>}
+
+      {!loading && !error && (
+        <div className="table-container">
+          <table className="crud-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Producto</th>
+                <th>Usuario</th>        {/* ← ahora muestra nombre */}
+                <th>Motivo</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reportes.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px' }}>
+                    No hay reportes registrados.
+                  </td>
+                </tr>
+              ) : (
+                reportes.map(r => (
+                  <tr key={r.id_reporte}>
+                    <td>
+                      <span className="category-id-pill">{r.id_reporte}</span>
+                    </td>
+                    <td className="category-name">#{r.id_producto}</td>
+                    <td className="category-name">
+                      {r.nombre_usuario ?? `#${r.id_usuario_reporta}`}  {/* fallback si el JOIN no encuentra usuario */}
+                    </td>
+                    <td>
+                      <span className="category-description text-truncate">{r.motivo}</span>
+                    </td>
+                    <td style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                      {r.fecha_reporte}
+                    </td>
+                    <td>
+                      <div className="actions-cell">
+                        <button
+                          className="btn-action-reporte revisado"
+                          onClick={() => updateEstado(r.id_reporte, 'Revisado')}
+                        >
+                          Revisado
+                        </button>
+                        <button
+                          className="btn-action-reporte resuelto"
+                          onClick={() => updateEstado(r.id_reporte, 'Resuelto')}
+                        >
+                          Resuelto
+                        </button>
+                        <button
+                          className="btn-action-row delete"
+                          onClick={() => eliminar(r.id_reporte)}
+                          title="Eliminar reporte"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

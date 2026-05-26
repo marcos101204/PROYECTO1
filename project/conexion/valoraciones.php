@@ -33,7 +33,8 @@ try {
                 vp.calificacion,
                 vp.comentario,
                 vp.fecha_creacion,
-                u.nombre AS nombre_usuario
+                u.nombre_completo AS nombre_usuario,
+                u.avatar_url AS avatar_url
             FROM valoracion_producto vp
             LEFT JOIN usuario u ON u.id_usuario = vp.id_usuario
             WHERE vp.id_producto = ?

@@ -55,8 +55,11 @@ try {
         $rutaDestino = $uploadDir . $nombreArchivo;
 
         if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaDestino)) {
-            // URL completa para guardarla en la BD
-            $url_imagen = "http://localhost/markito-api/" . $rutaDestino;
+            // URL completa para guardarla en la BD usando el host actual y la ruta real del script
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'];
+            $basePath = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+            $url_imagen = $scheme . '://' . $host . $basePath . '/' . $rutaDestino;
 
             $sqlImg = "INSERT INTO imagen_producto (id_producto, url_imagen, es_principal) VALUES (?, ?, 1)";
             $stmtImg = $pdo->prepare($sqlImg);

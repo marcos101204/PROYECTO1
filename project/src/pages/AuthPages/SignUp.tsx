@@ -40,6 +40,13 @@ export default function SignUp() {
             return;
         }
 
+        // Validar que el nombre contenga solo letras y espacios
+        const nombreValido = /^[A-Za-zÀ-ÖØ-öø-ÿ\u00F1\u00D1\s]+$/.test(name);
+        if (!nombreValido) {
+            setError("El nombre solo puede contener letras y espacios.");
+            return;
+        }
+
         const regexDocente = /^[a-zA-Z]+\.[a-zA-Z]+@itoaxaca\.edu\.mx$/;
         if (regexDocente.test(email)) {
             setError("Registro exclusivo para estudiantes. No se admiten cuentas de docentes.");
@@ -285,7 +292,11 @@ export default function SignUp() {
                                 <input
                                     type="text"
                                     value={name}
-                                    onChange={(e) => setName(e.target.value)}
+                                    onChange={(e) => {
+                                        // permitir solo letras (incluye acentos), espacios y Ñ/ñ
+                                        const filtered = e.target.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\u00F1\u00D1\s]/g, '');
+                                        setName(filtered);
+                                    }}
                                     placeholder="Juan Pérez"
                                     className="uni-input"
                                 />

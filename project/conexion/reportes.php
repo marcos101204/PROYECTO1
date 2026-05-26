@@ -30,14 +30,15 @@ try {
 
         case 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
-            if (empty($data['id_producto']) || empty($data['id_usuario_reporta']) || empty($data['motivo'])) {
+            $reporterId = $data['id_usuario_emisor'] ?? $data['id_usuario_reporta'] ?? null;
+            if (empty($data['id_producto']) || empty($reporterId) || empty($data['motivo'])) {
                 http_response_code(400);
-                echo json_encode(["status" => "error", "message" => "Campos requeridos: id_producto, id_usuario_reporta, motivo"]);
+                echo json_encode(["status" => "error", "message" => "Campos requeridos: id_producto, id_usuario_emisor, motivo"]);
                 exit();
             }
-            $sql = "INSERT INTO reporte (id_producto, id_usuario_reporta, motivo, fecha_reporte, estado) VALUES (?, ?, ?, NOW(), 'Pendiente')";
+            $sql = "INSERT INTO reporte (id_producto, id_usuario_emisor, motivo, fecha_reporte) VALUES (?, ?, ?, NOW())";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([$data['id_producto'], $data['id_usuario_reporta'], $data['motivo']]);
+            $stmt->execute([$data['id_producto'], $reporterId, $data['motivo']]);
             echo json_encode(["status" => "success", "message" => "Reporte creado"]);
             break;
 
@@ -50,10 +51,6 @@ try {
             }
             $fields = [];
             $params = [];
-            if (isset($data['estado'])) {
-                $fields[] = "estado = ?";
-                $params[] = $data['estado'];
-            }
             if (isset($data['motivo'])) {
                 $fields[] = "motivo = ?";
                 $params[] = $data['motivo'];
@@ -75,9 +72,39 @@ try {
                 echo json_encode(["status" => "error", "message" => "ID requerido para eliminar"]);
                 exit();
             }
-            $stmt = $pdo->prepare("DELETE FROM reporte WHERE id_reporte = ?");
-            $stmt->execute([$_GET['id']]);
-            echo json_encode(["status" => "success", "message" => "Reporte eliminado"]);
+            $id = $_GET['id'];
+            try {
+                // Iniciamos transacción para eliminar reporte y, si aplica, la publicación e imágenes asociadas
+                $pdo->beginTransaction();
+
+                // Obtener id_producto asociado al reporte
+                $stmt = $pdo->prepare("SELECT id_producto FROM reporte WHERE id_reporte = ?");
+                $stmt->execute([$id]);
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($row && !empty($row['id_producto'])) {
+                    $id_producto = $row['id_producto'];
+
+                    // Eliminar imágenes asociadas (si existe la tabla)
+                    $stmt = $pdo->prepare("DELETE FROM imagen_producto WHERE id_producto = ?");
+                    $stmt->execute([$id_producto]);
+
+                    // Eliminar la publicación
+                    $stmt = $pdo->prepare("DELETE FROM producto WHERE id_producto = ?");
+                    $stmt->execute([$id_producto]);
+                }
+
+                // Finalmente eliminar el reporte
+                $stmt = $pdo->prepare("DELETE FROM reporte WHERE id_reporte = ?");
+                $stmt->execute([$id]);
+
+                $pdo->commit();
+                echo json_encode(["status" => "success", "message" => "Reporte eliminado. Publicación asociada eliminada cuando aplicó."]);
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                http_response_code(500);
+                echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+            }
             break;
 
         default:

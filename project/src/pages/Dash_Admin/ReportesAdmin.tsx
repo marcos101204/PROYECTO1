@@ -4,11 +4,10 @@ import "./estilos.css";
 interface Reporte {
   id_reporte: number;
   id_producto: number;
-  id_usuario_reporta: number;
+  id_usuario_emisor: number;
   nombre_usuario: string;   // ← nuevo campo del JOIN
   motivo: string;
   fecha_reporte: string;
-  estado: string;
 }
 
 export default function ReportesAdmin() {
@@ -33,19 +32,6 @@ export default function ReportesAdmin() {
   };
 
   useEffect(() => { fetchReportes(); }, []);
-
-  const updateEstado = async (id: number, estado: string) => {
-    try {
-      const res = await fetch(API, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_reporte: id, estado })
-      });
-      const j = await res.json();
-      if (j.status === 'success') fetchReportes();
-      else alert('No se pudo actualizar');
-    } catch (e) { alert('Error de conexión'); }
-  };
 
   const eliminar = async (id: number) => {
     if (!confirm('¿Eliminar este reporte?')) return;
@@ -95,7 +81,7 @@ export default function ReportesAdmin() {
                     </td>
                     <td className="category-name">#{r.id_producto}</td>
                     <td className="category-name">
-                      {r.nombre_usuario ?? `#${r.id_usuario_reporta}`}  {/* fallback si el JOIN no encuentra usuario */}
+                      {r.nombre_usuario ?? `#${r.id_usuario_emisor}`}  {/* fallback si el JOIN no encuentra usuario */}
                     </td>
                     <td>
                       <span className="category-description text-truncate">{r.motivo}</span>
@@ -105,18 +91,6 @@ export default function ReportesAdmin() {
                     </td>
                     <td>
                       <div className="actions-cell">
-                        <button
-                          className="btn-action-reporte revisado"
-                          onClick={() => updateEstado(r.id_reporte, 'Revisado')}
-                        >
-                          Revisado
-                        </button>
-                        <button
-                          className="btn-action-reporte resuelto"
-                          onClick={() => updateEstado(r.id_reporte, 'Resuelto')}
-                        >
-                          Resuelto
-                        </button>
                         <button
                           className="btn-action-row delete"
                           onClick={() => eliminar(r.id_reporte)}

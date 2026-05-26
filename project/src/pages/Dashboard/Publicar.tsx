@@ -77,7 +77,7 @@ export default function Publicar() {
     }
 
     try {
-      const response = await fetch("http://localhost/markito-api/publicar.php", {
+      const response = await fetch("http://localhost/PROYECTO1/project/conexion/publicar.php", {
         method: "POST",
         // NOTA: Cuando usas FormData NO debes poner 'Content-Type': 'application/json'
         body: formData,
@@ -87,7 +87,7 @@ export default function Publicar() {
 
       if (response.ok) {
         alert("🎉 " + result.message);
-        navigate("/"); // Lo regresamos al Home para que vea su producto
+        navigate("/Home2"); // Lo regresamos a Home2 para que vea su producto
       } else {
         setError(result.message || "Error al publicar.");
       }
@@ -141,7 +141,7 @@ export default function Publicar() {
       <div className="pub-root">
         <div className="pub-container">
 
-          <div className="flex items-center gap-4 mb-8 cursor-pointer" onClick={() => navigate("/")}>
+          <div className="flex items-center gap-4 mb-8 cursor-pointer" onClick={() => navigate("/Home2")}>
             <div style={{ background: '#ffffff', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', fontWeight: 'bold' }}>
               ←
             </div>

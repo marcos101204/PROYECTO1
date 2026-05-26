@@ -7,6 +7,7 @@ interface Valoracion {
     comentario: string;
     fecha_creacion: string;
     nombre_usuario?: string;
+    avatar_url?: string;
 }
 
 interface ProductReviewProps {
@@ -304,14 +305,18 @@ export default function ProductReview({ id_producto, id_usuario }: ProductReview
                                 <div key={v.id_valoracion} className="review-card">
                                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
                                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                            <div style={{
-                                                width: 36, height: 36, borderRadius: "50%",
-                                                background: "linear-gradient(135deg, #ff6b35, #f7931e)",
-                                                display: "flex", alignItems: "center", justifyContent: "center",
-                                                fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 14, color: "white"
-                                            }}>
-                                                {(v.nombre_usuario || "U").charAt(0).toUpperCase()}
-                                            </div>
+                                            {v.avatar_url ? (
+                                                <img src={v.avatar_url} alt={v.nombre_usuario || 'avatar'} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', border: '1px solid #efe9e2' }} />
+                                            ) : (
+                                                <div style={{
+                                                    width: 36, height: 36, borderRadius: "50%",
+                                                    background: "linear-gradient(135deg, #ff6b35, #f7931e)",
+                                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                                    fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 14, color: "white"
+                                                }}>
+                                                    {(v.nombre_usuario || "U").charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
                                             <div>
                                                 <p style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, color: "#1a1a2e", margin: 0 }}>
                                                     {v.nombre_usuario || `Usuario #${v.id_usuario}`}
